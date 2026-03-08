@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch14-ethical-risk-checklist
+server:
+  port: 8080

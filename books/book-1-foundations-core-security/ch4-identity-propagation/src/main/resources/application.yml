@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch4-identity-propagation
+server:
+  port: 8080

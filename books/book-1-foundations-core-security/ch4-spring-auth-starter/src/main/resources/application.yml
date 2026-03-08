@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch4-spring-auth-starter
+server:
+  port: 8080

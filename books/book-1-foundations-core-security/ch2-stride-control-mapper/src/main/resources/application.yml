@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch2-stride-control-mapper
+server:
+  port: 8080

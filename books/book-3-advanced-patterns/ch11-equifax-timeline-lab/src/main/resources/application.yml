@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch11-equifax-timeline-lab
+server:
+  port: 8080

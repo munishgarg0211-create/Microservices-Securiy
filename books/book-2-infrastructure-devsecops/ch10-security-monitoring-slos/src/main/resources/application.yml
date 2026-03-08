@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch10-security-monitoring-slos
+server:
+  port: 8080

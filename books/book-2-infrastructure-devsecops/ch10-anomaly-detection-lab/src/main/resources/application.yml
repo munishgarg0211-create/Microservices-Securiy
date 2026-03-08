@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch10-anomaly-detection-lab
+server:
+  port: 8080

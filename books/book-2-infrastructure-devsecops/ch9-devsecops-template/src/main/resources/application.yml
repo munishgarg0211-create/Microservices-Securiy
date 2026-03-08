@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch9-devsecops-template
+server:
+  port: 8080

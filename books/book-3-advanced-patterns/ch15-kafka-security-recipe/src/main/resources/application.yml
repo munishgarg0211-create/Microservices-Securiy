@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch15-kafka-security-recipe
+server:
+  port: 8080

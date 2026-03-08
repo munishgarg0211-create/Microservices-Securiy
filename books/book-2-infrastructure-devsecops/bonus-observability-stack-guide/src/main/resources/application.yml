@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: bonus-observability-stack-guide
+server:
+  port: 8080

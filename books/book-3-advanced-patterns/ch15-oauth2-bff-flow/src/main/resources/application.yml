@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch15-oauth2-bff-flow
+server:
+  port: 8080

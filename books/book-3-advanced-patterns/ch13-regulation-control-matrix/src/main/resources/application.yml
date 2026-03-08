@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch13-regulation-control-matrix
+server:
+  port: 8080

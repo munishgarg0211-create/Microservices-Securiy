@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch13-data-residency-router
+server:
+  port: 8080

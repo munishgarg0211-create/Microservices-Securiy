@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch5-geo-ip-rate-controls
+server:
+  port: 8080

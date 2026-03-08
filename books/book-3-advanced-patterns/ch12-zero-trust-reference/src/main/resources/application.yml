@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch12-zero-trust-reference
+server:
+  port: 8080

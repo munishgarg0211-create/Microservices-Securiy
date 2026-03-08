@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch7-image-hygiene-signing
+server:
+  port: 8080

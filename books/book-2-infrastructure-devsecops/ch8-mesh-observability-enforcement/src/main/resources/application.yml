@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch8-mesh-observability-enforcement
+server:
+  port: 8080

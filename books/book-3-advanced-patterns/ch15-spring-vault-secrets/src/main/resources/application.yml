@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch15-spring-vault-secrets
+server:
+  port: 8080

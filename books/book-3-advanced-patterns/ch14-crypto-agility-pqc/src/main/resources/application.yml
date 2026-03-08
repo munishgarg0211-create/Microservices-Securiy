@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch14-crypto-agility-pqc
+server:
+  port: 8080

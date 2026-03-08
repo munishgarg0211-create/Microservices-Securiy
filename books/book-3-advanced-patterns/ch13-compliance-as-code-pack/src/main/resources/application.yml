@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch13-compliance-as-code-pack
+server:
+  port: 8080

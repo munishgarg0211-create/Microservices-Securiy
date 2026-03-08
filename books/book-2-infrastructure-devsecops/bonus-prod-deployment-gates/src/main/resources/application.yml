@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: bonus-prod-deployment-gates
+server:
+  port: 8080

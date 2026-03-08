@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch12-secure-style-comparison
+server:
+  port: 8080

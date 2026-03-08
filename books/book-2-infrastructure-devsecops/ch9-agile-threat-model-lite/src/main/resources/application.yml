@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch9-agile-threat-model-lite
+server:
+  port: 8080

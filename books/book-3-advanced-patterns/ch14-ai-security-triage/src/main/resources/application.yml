@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch14-ai-security-triage
+server:
+  port: 8080

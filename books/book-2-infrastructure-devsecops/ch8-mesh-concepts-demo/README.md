@@ -22,3 +22,12 @@ Data/control plane demo with sidecars.
 - Concept is demonstrable in isolation.
 - Security control is measurable (logs, test, or policy decision).
 - Failure mode and secure mode are both documented.
+
+## Generated Demo Sample
+- Runtime: Spring Boot 3.x, Java 21
+- API: GET /api/demo
+- Tests: DemoServiceTest, DemoControllerTest
+
+## Quick Start
+- Run: mvn spring-boot:run
+- Test: mvn test

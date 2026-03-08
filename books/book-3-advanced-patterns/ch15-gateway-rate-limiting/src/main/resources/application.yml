@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch15-gateway-rate-limiting
+server:
+  port: 8080

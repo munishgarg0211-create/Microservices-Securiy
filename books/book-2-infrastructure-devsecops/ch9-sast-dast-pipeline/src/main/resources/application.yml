@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch9-sast-dast-pipeline
+server:
+  port: 8080

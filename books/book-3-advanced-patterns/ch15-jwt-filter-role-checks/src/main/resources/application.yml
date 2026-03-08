@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch15-jwt-filter-role-checks
+server:
+  port: 8080

@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: bonus-incident-response-runbook
+server:
+  port: 8080

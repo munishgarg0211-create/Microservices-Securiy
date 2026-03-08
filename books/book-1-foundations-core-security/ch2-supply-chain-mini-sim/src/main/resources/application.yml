@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch2-supply-chain-mini-sim
+server:
+  port: 8080

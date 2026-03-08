@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch9-policy-as-code-cicd
+server:
+  port: 8080

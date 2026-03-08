@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch11-log4shell-breach-replay
+server:
+  port: 8080

@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch11-attack-framework-mapping
+server:
+  port: 8080

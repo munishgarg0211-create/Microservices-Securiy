@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch4-jwt-validation-rotation
+server:
+  port: 8080

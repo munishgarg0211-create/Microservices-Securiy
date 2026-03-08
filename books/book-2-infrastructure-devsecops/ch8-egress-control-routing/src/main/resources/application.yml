@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch8-egress-control-routing
+server:
+  port: 8080

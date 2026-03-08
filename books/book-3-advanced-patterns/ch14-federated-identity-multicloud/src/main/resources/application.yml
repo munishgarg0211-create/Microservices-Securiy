@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch14-federated-identity-multicloud
+server:
+  port: 8080

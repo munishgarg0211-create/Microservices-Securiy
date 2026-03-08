@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch13-governance-operating-model
+server:
+  port: 8080

@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch5-perimeter-threat-mitigation
+server:
+  port: 8080

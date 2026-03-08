@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch3-mtls-baseline
+server:
+  port: 8080

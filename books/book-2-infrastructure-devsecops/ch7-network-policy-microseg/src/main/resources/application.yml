@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch7-network-policy-microseg
+server:
+  port: 8080

@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch11-codecov-supplychain-lab
+server:
+  port: 8080

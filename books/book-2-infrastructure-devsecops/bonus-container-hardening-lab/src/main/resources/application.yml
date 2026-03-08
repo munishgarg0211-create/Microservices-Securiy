@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: bonus-container-hardening-lab
+server:
+  port: 8080

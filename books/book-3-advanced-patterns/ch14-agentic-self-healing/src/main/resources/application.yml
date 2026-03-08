@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch14-agentic-self-healing
+server:
+  port: 8080

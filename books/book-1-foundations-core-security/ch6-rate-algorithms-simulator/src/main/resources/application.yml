@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch6-rate-algorithms-simulator
+server:
+  port: 8080

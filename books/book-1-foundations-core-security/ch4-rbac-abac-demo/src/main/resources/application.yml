@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch4-rbac-abac-demo
+server:
+  port: 8080

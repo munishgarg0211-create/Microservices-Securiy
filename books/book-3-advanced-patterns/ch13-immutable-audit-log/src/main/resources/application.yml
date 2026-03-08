@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch13-immutable-audit-log
+server:
+  port: 8080

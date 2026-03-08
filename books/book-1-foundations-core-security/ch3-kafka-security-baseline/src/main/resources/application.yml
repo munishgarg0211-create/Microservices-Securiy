@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch3-kafka-security-baseline
+server:
+  port: 8080

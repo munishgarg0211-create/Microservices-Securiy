@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch5-request-validation-edge
+server:
+  port: 8080

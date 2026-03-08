@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch4-oauth2-grants-demo
+server:
+  port: 8080

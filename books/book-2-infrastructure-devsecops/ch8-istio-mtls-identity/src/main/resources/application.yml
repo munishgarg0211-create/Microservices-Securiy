@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch8-istio-mtls-identity
+server:
+  port: 8080

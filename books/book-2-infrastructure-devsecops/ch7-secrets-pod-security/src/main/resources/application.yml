@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch7-secrets-pod-security
+server:
+  port: 8080

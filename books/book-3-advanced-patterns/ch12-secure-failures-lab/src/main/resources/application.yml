@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch12-secure-failures-lab
+server:
+  port: 8080

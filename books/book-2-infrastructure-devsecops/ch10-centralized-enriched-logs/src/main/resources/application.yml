@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch10-centralized-enriched-logs
+server:
+  port: 8080

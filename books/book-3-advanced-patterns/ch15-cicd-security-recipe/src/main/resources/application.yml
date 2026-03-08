@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch15-cicd-security-recipe
+server:
+  port: 8080

@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch5-idp-integration-patterns
+server:
+  port: 8080

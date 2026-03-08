@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch8-mesh-concepts-demo
+server:
+  port: 8080

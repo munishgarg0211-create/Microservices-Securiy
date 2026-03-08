@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch4-federation-multitenancy
+server:
+  port: 8080

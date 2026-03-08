@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch6-dynamic-policy-engine
+server:
+  port: 8080

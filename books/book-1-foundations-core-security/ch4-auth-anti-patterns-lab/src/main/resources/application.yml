@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch4-auth-anti-patterns-lab
+server:
+  port: 8080

@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch7-k8s-rbac-isolation
+server:
+  port: 8080

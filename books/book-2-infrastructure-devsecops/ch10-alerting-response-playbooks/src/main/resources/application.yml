@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: ch10-alerting-response-playbooks
+server:
+  port: 8080
