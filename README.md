@@ -1,6 +1,6 @@
 # Microservices Security Demo Projects
 
-This repository contains chapter-wise demo project scaffolds for the 3-book series:
+This repository contains chapter-wise executable demo projects for the 3-book series:
 
 - Book 1: Foundations & Core Security
 - Book 2: Infrastructure & DevSecOps
@@ -13,4 +13,4 @@ Book series link: https://www.amazon.com/dp/B0GNK1DPXY?binding=kindle_edition&re
 Each concept has its own project folder with:
 
 - `README.md` (what to build and how to run)
-- `src/` and `infra/` starter folders
+- `src/` and `infra/` core implementation folders

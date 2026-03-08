@@ -22,6 +22,8 @@ public class DemoService {
     }
 
     public Map<String, Object> demo(String mode, Map<String, String> params) {
+        // Secure mode = good practice: enforce controls.
+        // Insecure mode = intentionally bad practice: show what breaks when controls are bypassed.
         String normalizedMode = "insecure".equalsIgnoreCase(mode) ? "insecure" : "secure";
         boolean secureMode = "secure".equals(normalizedMode);
 
@@ -59,6 +61,8 @@ public class DemoService {
         String owner = params.getOrDefault("owner", "bob");
         boolean authorizedByOwnership = actor.equals(owner) || "admin".equalsIgnoreCase(actor);
 
+        // Good practice: enforce object ownership/role checks.
+        // Bad practice: allow access regardless of ownership (BOLA-style flaw).
         boolean allowed = secureMode ? authorizedByOwnership : true;
         result.put("scenario", "object-level-authorization");
         result.put("actor", actor);
@@ -75,6 +79,8 @@ public class DemoService {
         boolean trustedClient = Boolean.parseBoolean(params.getOrDefault("trustedClient", "false"));
 
         boolean strongTls = compareTls(tlsVersion, "1.2") >= 0;
+        // Good practice: require modern TLS + trusted identity.
+        // Bad practice: accept weak or untrusted transport.
         boolean accepted = secureMode ? (strongTls && trustedClient) : true;
 
         result.put("scenario", "transport-hardening");
@@ -91,6 +97,8 @@ public class DemoService {
         int requests = parseInt(params.getOrDefault("requests", "120"), 120);
         int limit = parseInt(params.getOrDefault("limit", "100"), 100);
 
+        // Good practice: enforce limits and block overflow.
+        // Bad practice: process all traffic and allow abuse.
         int blocked = secureMode ? Math.max(0, requests - limit) : 0;
         int allowed = requests - blocked;
 
@@ -111,6 +119,8 @@ public class DemoService {
         boolean schemaValid = Boolean.parseBoolean(params.getOrDefault("schemaValid", "false"));
         boolean encryptedChannel = Boolean.parseBoolean(params.getOrDefault("encryptedChannel", "false"));
 
+        // Good practice: accept only authenticated, valid, encrypted messages.
+        // Bad practice: trust any payload reaching the bus.
         boolean accepted = secureMode ? (producerAuth && schemaValid && encryptedChannel) : true;
 
         result.put("scenario", "message-channel-security");
@@ -129,6 +139,8 @@ public class DemoService {
         boolean hasSbom = Boolean.parseBoolean(params.getOrDefault("hasSbom", "false"));
         int criticalVulns = parseInt(params.getOrDefault("criticalVulns", "2"), 2);
 
+        // Good practice: enforce policy gates before deploy.
+        // Bad practice: bypass gates even when artifacts fail checks.
         boolean pass = secureMode ? (imageSigned && hasSbom && criticalVulns == 0) : true;
 
         result.put("scenario", "policy-gate");
@@ -146,6 +158,8 @@ public class DemoService {
         int events = parseInt(params.getOrDefault("events", "50"), 50);
         int suspicious = parseInt(params.getOrDefault("suspicious", "7"), 7);
 
+        // Good practice: enrich and triage all suspicious events.
+        // Bad practice: weak telemetry creates blind spots.
         int enriched = secureMode ? events : Math.max(0, events / 5);
         int triaged = secureMode ? suspicious : Math.max(0, suspicious / 3);
 
@@ -163,6 +177,8 @@ public class DemoService {
 
     private void applyIncidentScenario(Map<String, Object> result, Map<String, String> params, boolean secureMode) {
         int incidents = parseInt(params.getOrDefault("incidents", "3"), 3);
+        // Good practice: runbook-driven response lowers MTTR.
+        // Bad practice: ad-hoc response increases impact window.
         int mttrMinutes = secureMode ? 25 : 120;
         boolean runbookUsed = secureMode;
 
@@ -182,6 +198,8 @@ public class DemoService {
         String requestRegion = params.getOrDefault("requestRegion", "us-east-1");
         boolean evidenceAttached = Boolean.parseBoolean(params.getOrDefault("evidenceAttached", "false"));
 
+        // Good practice: enforce region + evidence constraints.
+        // Bad practice: ignore compliance controls and continue.
         boolean compliant = secureMode ? (dataRegion.equals(requestRegion) && evidenceAttached) : true;
 
         result.put("scenario", "compliance-control");
@@ -200,6 +218,8 @@ public class DemoService {
         int controlCoverage = secureMode ? parseInt(params.getOrDefault("controlCoverage", "85"), 85)
                 : parseInt(params.getOrDefault("controlCoverage", "30"), 30);
 
+        // Good practice: improve control coverage to reduce residual risk.
+        // Bad practice: low coverage leaves known attack paths exposed.
         int residualRisk = Math.max(0, exploitability - controlCoverage);
 
         result.put("scenario", "threat-mitigation");

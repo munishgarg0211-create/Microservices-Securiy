@@ -16,6 +16,8 @@ public class DemoController {
         this.demoService = demoService;
     }
 
+    // mode selects good practice (secure) vs intentionally bad practice (insecure).
+    // params carries chapter-specific inputs so one endpoint can demo different controls.
     @GetMapping
     public Map<String, Object> getDemo(
             @RequestParam(defaultValue = "secure") String mode,
