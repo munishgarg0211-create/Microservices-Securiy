@@ -3,6 +3,7 @@ package com.munishgarg.microsecurity.book1.ch6_dynamic_policy_engine;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -16,7 +17,9 @@ public class DemoController {
     }
 
     @GetMapping
-    public Map<String, String> getDemo() {
-        return demoService.demo();
+    public Map<String, Object> getDemo(
+            @RequestParam(defaultValue = "secure") String mode,
+            @RequestParam Map<String, String> params) {
+        return demoService.demo(mode, params);
     }
 }

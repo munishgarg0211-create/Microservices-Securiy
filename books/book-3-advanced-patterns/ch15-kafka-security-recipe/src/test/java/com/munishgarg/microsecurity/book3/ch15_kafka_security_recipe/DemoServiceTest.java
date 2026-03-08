@@ -1,6 +1,7 @@
 package com.munishgarg.microsecurity.book3.ch15_kafka_security_recipe;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
@@ -11,12 +12,23 @@ class DemoServiceTest {
     private final DemoService service = new DemoService();
 
     @Test
-    void shouldReturnExpectedMetadata() {
-        Map<String, String> result = service.demo();
+    void shouldReturnProjectMetadataAndSecureDefaults() {
+        Map<String, Object> result = service.demo("secure", Map.of());
 
         assertNotNull(result);
         assertEquals("ch15-kafka-security-recipe", result.get("project"));
         assertEquals("enabled", result.get("secureControl"));
         assertEquals("sample-ready", result.get("status"));
+        assertEquals("secure", result.get("mode"));
+    }
+
+    @Test
+    void shouldDifferentiateSecureAndInsecureImpact() {
+        Map<String, Object> secure = service.demo("secure", Map.of());
+        Map<String, Object> insecure = service.demo("insecure", Map.of());
+
+        assertEquals("secure", secure.get("mode"));
+        assertEquals("insecure", insecure.get("mode"));
+        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
     }
 }

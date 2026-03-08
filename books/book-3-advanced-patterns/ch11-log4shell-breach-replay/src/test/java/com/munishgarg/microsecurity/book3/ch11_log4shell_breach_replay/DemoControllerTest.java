@@ -18,10 +18,21 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeDemoPayload() throws Exception {
+    void shouldServeSecureDemoPayload() throws Exception {
         mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch11-log4shell-breach-replay"))
-                .andExpect(jsonPath("$.secureControl").value("enabled"));
+                .andExpect(jsonPath("$.mode").value("secure"))
+                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
+                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+    }
+
+    @Test
+    void shouldServeInsecureDemoPayload() throws Exception {
+        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.project").value("ch11-log4shell-breach-replay"))
+                .andExpect(jsonPath("$.mode").value("insecure"))
+                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
     }
 }
