@@ -8,7 +8,7 @@ This repository contains chapter-wise demo project scaffolds for the 3-book seri
 
 Book series link: https://www.amazon.com/dp/B0GNK1DPXY?binding=kindle_edition&ref=dbs_dp_rwt_sb_pc_tkin
 
-[![Microservices Security Book Series]([assets/series.jpg])]([https://www.amazon.com/dp/B0GNK1DPXY?binding=kindle_edition&ref=dbs_dp_rwt_sb_pc_tkin](https://www.amazon.com/dp/B0GNK1DPXY?binding=kindle_edition&ref=dbs_dp_rwt_sb_pc_tkin))
+[![Microservices Security Book Series](assets/series.jpg)](https://www.amazon.com/dp/B0GNK1DPXY?binding=kindle_edition&ref=dbs_dp_rwt_sb_pc_tkin)
 
 Each concept has its own project folder with:
 
