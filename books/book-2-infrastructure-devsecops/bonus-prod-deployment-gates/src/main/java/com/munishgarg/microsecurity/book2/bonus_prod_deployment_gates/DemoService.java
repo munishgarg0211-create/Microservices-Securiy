@@ -13,6 +13,12 @@ public class DemoService {
     private static final String CONCEPT = "Prod Deployment Gates";
     private static final String CONTROL_FAMILY = "DEFAULT";
 
+    // Production copy/paste checklist:
+    // 1) Replace demo params with trusted identity/context sources.
+    // 2) Externalize policy decisions and thresholds.
+    // 3) Add explicit deny paths, observability, and error handling.
+
+
     public Map<String, Object> demo() {
         return demo("secure", Map.of());
     }

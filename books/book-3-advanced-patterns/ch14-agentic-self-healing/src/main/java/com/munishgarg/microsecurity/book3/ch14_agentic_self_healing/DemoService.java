@@ -13,6 +13,12 @@ public class DemoService {
     private static final String CONCEPT = "Agentic Self Healing";
     private static final String CONTROL_FAMILY = "INCIDENT";
 
+    // Production copy/paste checklist:
+    // 1) Bind detections to actionable runbooks and on-call ownership.
+    // 2) Automate containment with approvals and rollback guardrails.
+    // 3) Capture timeline/evidence for post-incident learning and compliance.
+
+
     public Map<String, Object> demo() {
         return demo("secure", Map.of());
     }

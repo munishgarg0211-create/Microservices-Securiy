@@ -13,6 +13,12 @@ public class DemoService {
     private static final String CONCEPT = "Security First Adr";
     private static final String CONTROL_FAMILY = "COMPLIANCE";
 
+    // Production copy/paste checklist:
+    // 1) Source region/classification constraints from policy registry, not request input.
+    // 2) Persist auditable decision artifacts (who/what/when/why).
+    // 3) Enforce deny-by-default when evidence is missing or stale.
+
+
     public Map<String, Object> demo() {
         return demo("secure", Map.of());
     }

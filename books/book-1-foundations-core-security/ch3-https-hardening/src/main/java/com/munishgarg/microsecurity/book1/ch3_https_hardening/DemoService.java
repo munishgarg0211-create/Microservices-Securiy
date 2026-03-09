@@ -13,6 +13,12 @@ public class DemoService {
     private static final String CONCEPT = "Https Hardening";
     private static final String CONTROL_FAMILY = "TRANSPORT";
 
+    // Production copy/paste checklist:
+    // 1) Enforce TLS/mTLS in gateway/service mesh and disable legacy protocols.
+    // 2) Validate client cert or token-bound identity from trusted infrastructure.
+    // 3) Keep protocol/cipher policy externalized (config/policy engine), not hardcoded defaults.
+
+
     public Map<String, Object> demo() {
         return demo("secure", Map.of());
     }

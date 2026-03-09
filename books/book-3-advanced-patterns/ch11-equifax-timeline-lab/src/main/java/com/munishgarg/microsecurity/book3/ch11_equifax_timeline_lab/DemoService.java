@@ -13,6 +13,12 @@ public class DemoService {
     private static final String CONCEPT = "Equifax Timeline Lab";
     private static final String CONTROL_FAMILY = "THREAT";
 
+    // Production copy/paste checklist:
+    // 1) Calibrate exploitability/control coverage from real threat model data.
+    // 2) Tie mitigation thresholds to risk appetite and governance policy.
+    // 3) Track residual-risk trend over time, not single-request snapshots.
+
+
     public Map<String, Object> demo() {
         return demo("secure", Map.of());
     }

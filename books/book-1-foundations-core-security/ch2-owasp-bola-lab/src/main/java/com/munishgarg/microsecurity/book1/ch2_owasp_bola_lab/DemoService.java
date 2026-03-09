@@ -13,6 +13,12 @@ public class DemoService {
     private static final String CONCEPT = "Owasp Bola Lab";
     private static final String CONTROL_FAMILY = "AUTHZ";
 
+    // Production copy/paste checklist:
+    // 1) Read actor from JWT/security context, never from request params.
+    // 2) Read resource owner/ACL from DB or trusted service.
+    // 3) Return 403 on unauthorized access before loading sensitive payloads.
+
+
     public Map<String, Object> demo() {
         return demo("secure", Map.of());
     }
@@ -57,6 +63,9 @@ public class DemoService {
     }
 
     private void applyAuthzScenario(Map<String, Object> result, Map<String, String> params, boolean secureMode) {
+        // Demo-only inputs: actor/owner are passed as query params for learnability.
+        // Production pattern: actor comes from authenticated principal (JWT/session),
+        // and owner comes from trusted resource data (DB/service), never user input.
         String actor = params.getOrDefault("actor", "alice");
         String owner = params.getOrDefault("owner", "bob");
         boolean authorizedByOwnership = actor.equals(owner) || "admin".equalsIgnoreCase(actor);

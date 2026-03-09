@@ -52,7 +52,7 @@ Per-user token-aware rate limiting.
 - `src/main/java/com/munishgarg/microsecurity/book3/ch15_gateway_rate_limiting/DemoController.java`: API layer where request validation/authorization behavior is demonstrated.
 - `src/main/java/com/munishgarg/microsecurity/book3/ch15_gateway_rate_limiting/DemoService.java`: Service logic that implements the chapter's security control.
 - `src/main/resources/application.yml`: Runtime security/config properties for this chapter.
-- `infra/`: Reserved for deployment/policy manifests (currently deployment placeholder).
+- `infra/`: Reserved for deployment/policy manifests (currently scaffold placeholder).
 - `pom.xml`: Build dependencies and plugins used to run and test this demo.
 - `src/test/java/com/munishgarg/microsecurity/book3/ch15_gateway_rate_limiting/DemoControllerTest.java`: Automated check that validates expected secure behavior and impact.
 - `src/test/java/com/munishgarg/microsecurity/book3/ch15_gateway_rate_limiting/DemoServiceTest.java`: Automated check that validates expected secure behavior and impact.
@@ -81,10 +81,14 @@ public class DemoController {
     public DemoController(DemoService demoService) {
         this.demoService = demoService;
     }
-
     // mode selects good practice (secure) vs intentionally bad practice (insecure).
     // params carries chapter-specific inputs so one endpoint can demo different controls.
-    @GetMapping
+    // Production copy/paste checklist:
+    // 1) Treat request params as untrusted input and validate strictly.
+    // 2) Use authenticated principal/claims from security context for auth decisions.
+    // 3) Keep authorization/business decisions in service/policy layer, not in controllers.
+
+    @GetMapping@GetMapping
     public Map<String, Object> getDemo(
             @RequestParam(defaultValue = "secure") String mode,
             @RequestParam Map<String, String> params) {
@@ -110,6 +114,12 @@ public class DemoService {
     private static final String OBJECTIVE = "Per-user token-aware rate limiting.";
     private static final String CONCEPT = "Gateway Rate Limiting";
     private static final String CONTROL_FAMILY = "RATE_LIMIT";
+
+    // Production copy/paste checklist:
+    // 1) Back limits with distributed state (Redis/API gateway), not in-memory counters.
+    // 2) Key limits by principal/API key/tenant + route.
+    // 3) Emit audit metrics and consistent 429 responses with retry guidance.
+
 
     public Map<String, Object> demo() {
         return demo("secure", Map.of());
@@ -443,6 +453,7 @@ class DemoServiceTest {
 }
 ```
 <!-- CODE_MAP_END -->
+
 
 
 

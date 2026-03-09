@@ -13,6 +13,12 @@ public class DemoService {
     private static final String CONCEPT = "Protocol Threat Comparison";
     private static final String CONTROL_FAMILY = "MESSAGING";
 
+    // Production copy/paste checklist:
+    // 1) Enforce producer identity (mTLS/SASL/OAuth) at broker and client.
+    // 2) Validate schema and compatibility before consumer processing.
+    // 3) Sign/encrypt payloads when data sensitivity requires end-to-end guarantees.
+
+
     public Map<String, Object> demo() {
         return demo("secure", Map.of());
     }

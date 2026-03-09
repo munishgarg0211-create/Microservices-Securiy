@@ -13,6 +13,12 @@ public class DemoService {
     private static final String CONCEPT = "Anomaly Detection Lab";
     private static final String CONTROL_FAMILY = "OBSERVABILITY";
 
+    // Production copy/paste checklist:
+    // 1) Emit structured security events with trace/user/request correlation IDs.
+    // 2) Route events to SIEM/alerts with ownership and escalation policy.
+    // 3) Define SLOs for detection latency and triage completeness.
+
+
     public Map<String, Object> demo() {
         return demo("secure", Map.of());
     }

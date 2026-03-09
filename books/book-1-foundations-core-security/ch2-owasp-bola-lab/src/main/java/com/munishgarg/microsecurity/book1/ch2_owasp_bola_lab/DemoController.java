@@ -15,9 +15,14 @@ public class DemoController {
     public DemoController(DemoService demoService) {
         this.demoService = demoService;
     }
-
     // mode selects good practice (secure) vs intentionally bad practice (insecure).
     // params carries chapter-specific inputs so one endpoint can demo different controls.
+    // Production copy/paste checklist:
+    // 1) Treat request params as untrusted input and validate strictly.
+    // 2) Use authenticated principal/claims from security context for auth decisions.
+    // 3) Keep authorization/business decisions in service/policy layer, not in controllers.
+
+    @GetMapping// Production systems must derive actor identity from JWT/security context, not request params.
     @GetMapping
     public Map<String, Object> getDemo(
             @RequestParam(defaultValue = "secure") String mode,

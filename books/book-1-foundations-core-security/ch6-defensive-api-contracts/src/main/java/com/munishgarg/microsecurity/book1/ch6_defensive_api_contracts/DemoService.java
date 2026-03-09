@@ -13,6 +13,12 @@ public class DemoService {
     private static final String CONCEPT = "Defensive Api Contracts";
     private static final String CONTROL_FAMILY = "RATE_LIMIT";
 
+    // Production copy/paste checklist:
+    // 1) Back limits with distributed state (Redis/API gateway), not in-memory counters.
+    // 2) Key limits by principal/API key/tenant + route.
+    // 3) Emit audit metrics and consistent 429 responses with retry guidance.
+
+
     public Map<String, Object> demo() {
         return demo("secure", Map.of());
     }

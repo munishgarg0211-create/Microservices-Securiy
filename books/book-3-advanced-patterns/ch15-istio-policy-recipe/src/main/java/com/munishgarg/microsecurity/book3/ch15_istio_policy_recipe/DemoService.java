@@ -13,6 +13,12 @@ public class DemoService {
     private static final String CONCEPT = "Istio Policy Recipe";
     private static final String CONTROL_FAMILY = "POLICY";
 
+    // Production copy/paste checklist:
+    // 1) Evaluate real policy bundles (OPA/Kyverno/Conftest) in CI and admission paths.
+    // 2) Integrate artifact signing, SBOM attestation, and vulnerability thresholds.
+    // 3) Fail closed on policy errors and log policy decision evidence.
+
+
     public Map<String, Object> demo() {
         return demo("secure", Map.of());
     }

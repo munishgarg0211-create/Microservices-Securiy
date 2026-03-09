@@ -13,6 +13,12 @@ public class DemoService {
     private static final String CONCEPT = "Identity Propagation";
     private static final String CONTROL_FAMILY = "AUTHZ";
 
+    // Production copy/paste checklist:
+    // 1) Read actor from JWT/security context, never from request params.
+    // 2) Read resource owner/ACL from DB or trusted service.
+    // 3) Return 403 on unauthorized access before loading sensitive payloads.
+
+
     public Map<String, Object> demo() {
         return demo("secure", Map.of());
     }
