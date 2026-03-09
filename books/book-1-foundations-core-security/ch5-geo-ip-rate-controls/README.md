@@ -8,6 +8,22 @@
 ## Objective
 Context-aware edge controls and policy decisions.
 
+## Mitigation Logic
+- Control family: `RATE_LIMIT` (abuse throttling and edge protection).
+- Core secure/insecure decision model in code:
+  - Secure mode (`mode=secure`) enforces request limits and blocks overflow.
+  - Insecure mode (`mode=insecure`) processes all traffic without throttling.
+- Good practice (`mode=secure`):
+  - Reduces brute-force and abuse blast radius via bounded throughput.
+  - Reports blocked-over-limit behavior and lower risk.
+- Bad practice (`mode=insecure`):
+  - Leaves endpoints exposed to unbounded request spikes.
+  - Reports elevated risk when abuse traffic is not constrained.
+- Example:
+  - `GET /api/demo?mode=secure&requests=120&limit=100` -> throttled overflow.
+  - `GET /api/demo?mode=insecure&requests=120&limit=100` -> all allowed + higher risk.
+
+
 ## Demo Scope
 - Execute secure and insecure edge-control outcomes via `GET /api/demo?mode=secure|insecure`.
 - Use traffic parameters like `requests` and `limit` to simulate abuse throttling.

@@ -8,6 +8,22 @@
 ## Objective
 Tabletop drill and incident SOP assets.
 
+## Mitigation Logic
+- Control family: `INCIDENT` (containment workflow and response execution).
+- Core secure/insecure decision model in code:
+  - Secure mode (`mode=secure`) models runbook-driven coordinated response.
+  - Insecure mode (`mode=insecure`) models ad-hoc uncoordinated response.
+- Good practice (`mode=secure`):
+  - Reduces MTTR and containment delay through prepared procedures.
+  - Lowers impact duration and operational risk.
+- Bad practice (`mode=insecure`):
+  - Increases MTTR and incident blast radius due to weak coordination.
+  - Raises risk due to delayed containment.
+- Example:
+  - `GET /api/demo?mode=secure&incidents=3` -> contained, lower MTTR.
+  - `GET /api/demo?mode=insecure&incidents=3` -> uncoordinated, higher MTTR/risk.
+
+
 ## Demo Scope
 - Execute secure and insecure incident-response outcomes via `GET /api/demo?mode=secure|insecure`.
 - Use scenario input like `incidents` to model response posture.

@@ -8,6 +8,22 @@
 ## Objective
 SASL/SCRAM + ACL + TLS producer/consumer.
 
+## Mitigation Logic
+- Control family: `MESSAGING` (message integrity, producer trust, and channel protection).
+- Core secure/insecure decision model in code:
+  - Secure mode (`mode=secure`) requires producer auth, schema validity, and encrypted channel.
+  - Insecure mode (`mode=insecure`) accepts messages without these guarantees.
+- Good practice (`mode=secure`):
+  - Rejects untrusted or malformed events before processing.
+  - Lowers risk of poisoned or spoofed message flows.
+- Bad practice (`mode=insecure`):
+  - Accepts unauthenticated/invalid events.
+  - Raises risk for event-bus compromise and downstream corruption.
+- Example:
+  - `GET /api/demo?mode=secure&producerAuth=false&schemaValid=false&encryptedChannel=false` -> reject.
+  - `GET /api/demo?mode=insecure&producerAuth=false&schemaValid=false&encryptedChannel=false` -> accept + high risk.
+
+
 ## Demo Scope
 - Execute secure and insecure messaging outcomes via `GET /api/demo?mode=secure|insecure`.
 - Use message parameters like `producerAuth`, `schemaValid`, and `encryptedChannel`.

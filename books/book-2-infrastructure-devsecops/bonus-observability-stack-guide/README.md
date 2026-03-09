@@ -8,6 +8,22 @@
 ## Objective
 Deploy baseline observability for security.
 
+## Mitigation Logic
+- Control family: `OBSERVABILITY` (security signal enrichment and triage coverage).
+- Core secure/insecure decision model in code:
+  - Secure mode (`mode=secure`) enriches and triages suspicious events comprehensively.
+  - Insecure mode (`mode=insecure`) leaves sparse telemetry and blind spots.
+- Good practice (`mode=secure`):
+  - Improves detection quality and response readiness.
+  - Lowers operational risk through better visibility.
+- Bad practice (`mode=insecure`):
+  - Under-instrumented telemetry weakens threat detection.
+  - Raises risk due to reduced signal fidelity and triage coverage.
+- Example:
+  - `GET /api/demo?mode=secure&events=50&suspicious=7` -> high enrichment/triage.
+  - `GET /api/demo?mode=insecure&events=50&suspicious=7` -> blind spots + higher risk.
+
+
 ## Demo Scope
 - Execute secure and insecure observability outcomes via `GET /api/demo?mode=secure|insecure`.
 - Use telemetry parameters like `events` and `suspicious`.

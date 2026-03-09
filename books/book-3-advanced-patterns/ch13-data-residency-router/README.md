@@ -8,6 +8,22 @@
 ## Objective
 Geo-sharding router with privacy controls.
 
+## Mitigation Logic
+- Control family: `COMPLIANCE` (policy evidence and governance constraint enforcement).
+- Core secure/insecure decision model in code:
+  - Secure mode (`mode=secure`) enforces region/evidence checks before compliant decision.
+  - Insecure mode (`mode=insecure`) bypasses these constraints.
+- Good practice (`mode=secure`):
+  - Preserves auditable control outcomes and data-governance boundaries.
+  - Lowers risk when compliance checks pass.
+- Bad practice (`mode=insecure`):
+  - Allows non-compliant flow progression without evidence.
+  - Raises legal/regulatory risk.
+- Example:
+  - `GET /api/demo?mode=secure&dataRegion=eu-west-1&requestRegion=us-east-1&evidenceAttached=false` -> violation.
+  - `GET /api/demo?mode=insecure&dataRegion=eu-west-1&requestRegion=us-east-1&evidenceAttached=false` -> bypass + higher risk.
+
+
 ## Demo Scope
 - Execute secure and insecure compliance outcomes via `GET /api/demo?mode=secure|insecure`.
 - Use compliance parameters like `dataRegion`, `requestRegion`, and `evidenceAttached`.

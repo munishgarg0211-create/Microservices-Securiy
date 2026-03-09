@@ -8,6 +8,22 @@
 ## Objective
 Headers, cache controls, and API hardening.
 
+## Mitigation Logic
+- Control family: `DEFAULT` (secure-by-default control gate).
+- Core secure/insecure decision model in code:
+  - Secure mode (`mode=secure`) returns `controlDecision=enforced`.
+  - Insecure mode (`mode=insecure`) returns `controlDecision=bypassed`.
+- Good practice (`mode=secure`):
+  - Applies safety checks before business execution.
+  - Returns lower risk profile.
+- Bad practice (`mode=insecure`):
+  - Skips checks to illustrate failure mode.
+  - Returns higher risk profile.
+- Example:
+  - `GET /api/demo?mode=secure` -> enforced controls.
+  - `GET /api/demo?mode=insecure` -> bypassed controls.
+
+
 ## Demo Scope
 - Execute secure and insecure outcomes via `GET /api/demo?mode=secure|insecure`.
 - Use request parameters to simulate chapter-specific control checks.

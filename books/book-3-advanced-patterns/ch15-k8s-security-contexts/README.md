@@ -8,6 +8,22 @@
 ## Objective
 RunAsNonRoot and restricted context examples.
 
+## Mitigation Logic
+- Control family: `POLICY` (deployment/runtime policy gate enforcement).
+- Core secure/insecure decision model in code:
+  - Secure mode (`mode=secure`) blocks when signing/SBOM/vulnerability gates fail.
+  - Insecure mode (`mode=insecure`) bypasses policy gates.
+- Good practice (`mode=secure`):
+  - Stops unsafe artifacts and non-compliant deployments before release.
+  - Produces lower risk when policy conditions are satisfied.
+- Bad practice (`mode=insecure`):
+  - Allows deployment despite failed control evidence.
+  - Produces higher supply-chain/runtime risk.
+- Example:
+  - `GET /api/demo?mode=secure&imageSigned=false&hasSbom=false&criticalVulns=2` -> block.
+  - `GET /api/demo?mode=insecure&imageSigned=false&hasSbom=false&criticalVulns=2` -> pass + high risk.
+
+
 ## Demo Scope
 - Execute secure and insecure policy-gate outcomes via `GET /api/demo?mode=secure|insecure`.
 - Use policy parameters like `imageSigned`, `hasSbom`, and `criticalVulns`.

@@ -8,6 +8,22 @@
 ## Objective
 TLS cert rotation and HTTPS-only behavior.
 
+## Mitigation Logic
+- Control family: `TRANSPORT` (TLS/mTLS and trust-channel validation).
+- Core secure/insecure decision model in code:
+  - Secure mode (`mode=secure`) requires strong TLS and trusted client identity.
+  - Insecure mode (`mode=insecure`) accepts weak/untrusted transport for comparison.
+- Good practice (`mode=secure`):
+  - Enforces encrypted transport and identity trust constraints.
+  - Produces lower risk when transport requirements are met.
+- Bad practice (`mode=insecure`):
+  - Permits weak/legacy transport conditions.
+  - Produces higher risk for interception and impersonation exposure.
+- Example:
+  - `GET /api/demo?mode=secure&tlsVersion=1.0&trustedClient=false` -> deny.
+  - `GET /api/demo?mode=insecure&tlsVersion=1.0&trustedClient=false` -> allow + higher risk.
+
+
 ## Demo Scope
 - Execute secure and insecure transport outcomes via `GET /api/demo?mode=secure|insecure`.
 - Use transport parameters like `tlsVersion` and `trustedClient` to model trust decisions.

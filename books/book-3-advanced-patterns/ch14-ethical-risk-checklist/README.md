@@ -8,6 +8,22 @@
 ## Objective
 Privacy and ethics decision checklist.
 
+## Mitigation Logic
+- Control family: `THREAT` (attack-path mitigation via control coverage).
+- Core risk model in code:
+  - `residualRisk = exploitability - controlCoverage`
+  - `controlDecision = mitigated` when `residualRisk <= 20`, otherwise `exposed`.
+- Good practice (`mode=secure`):
+  - Uses stronger control coverage to reduce reachable attack paths.
+  - Lowers residual risk and trends toward `mitigated`.
+- Bad practice (`mode=insecure`):
+  - Uses weaker control coverage leaving threat paths exposed.
+  - Increases residual risk and trends toward `exposed`.
+- Example:
+  - `GET /api/demo?mode=secure&exploitability=80&controlCoverage=85` -> mitigated.
+  - `GET /api/demo?mode=insecure&exploitability=80&controlCoverage=30` -> exposed.
+
+
 ## Demo Scope
 - Execute secure and insecure threat-mitigation outcomes via `GET /api/demo?mode=secure|insecure`.
 - Use threat parameters like `exploitability` and `controlCoverage`.

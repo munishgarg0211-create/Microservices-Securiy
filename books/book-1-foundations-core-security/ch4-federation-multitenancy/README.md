@@ -8,6 +8,22 @@
 ## Objective
 Tenant-scoped claims and policy checks.
 
+## Mitigation Logic
+- Control family: `AUTHZ` (identity and object-level authorization enforcement).
+- Core secure/insecure decision model in code:
+  - Secure mode (`mode=secure`) enforces ownership/role checks before allowing access.
+  - Insecure mode (`mode=insecure`) bypasses authorization checks to demonstrate exploit impact.
+- Good practice (`mode=secure`):
+  - Requires valid ownership/admin conditions for object access.
+  - Returns lower risk when unauthorized access is denied.
+- Bad practice (`mode=insecure`):
+  - Allows access without ownership validation (BOLA-style exposure).
+  - Returns high risk when unauthorized access is effectively allowed.
+- Example:
+  - `GET /api/demo?mode=secure&actor=alice&owner=bob` -> deny + lower exposure.
+  - `GET /api/demo?mode=insecure&actor=alice&owner=bob` -> bypass + higher exposure.
+
+
 ## Demo Scope
 - Execute secure and insecure authorization outcomes via `GET /api/demo?mode=secure|insecure`.
 - Use authz parameters like `actor` and `owner` to simulate ownership and privilege checks.
