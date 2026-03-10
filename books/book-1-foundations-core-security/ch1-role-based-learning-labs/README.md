@@ -87,7 +87,7 @@ public class DemoController {
     // 2) Use authenticated principal/claims from security context for auth decisions.
     // 3) Keep authorization/business decisions in service/policy layer, not in controllers.
 
-    @GetMapping@GetMapping
+    @GetMapping
     public Map<String, Object> getDemo(
             @RequestParam(defaultValue = "secure") String mode,
             @RequestParam Map<String, String> params) {

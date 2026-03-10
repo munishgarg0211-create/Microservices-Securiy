@@ -88,7 +88,7 @@ public class DemoController {
     // 2) Use authenticated principal/claims from security context for auth decisions.
     // 3) Keep authorization/business decisions in service/policy layer, not in controllers.
 
-    @GetMapping// Production systems must derive actor identity from JWT/security context, not request params.
+    //  Production systems must derive actor identity from JWT/security context, not request params.
     @GetMapping
     public Map<String, Object> getDemo(
             @RequestParam(defaultValue = "secure") String mode,
