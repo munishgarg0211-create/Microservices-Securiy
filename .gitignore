@@ -5,3 +5,5 @@ scaffold_projects.sh
 
 # Build artifacts
 **/target/
+
+.DS_Store

@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.munishgarg.microsecurity</groupId>
+  <artifactId>book-3-advanced-patterns-aggregate</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Microservices Security book-3-advanced-patterns Aggregator</name>
+
+  <modules>
+    <module>ch11-attack-framework-mapping</module>
+    <module>ch11-capitalone-ssrf-lab</module>
+    <module>ch11-codecov-supplychain-lab</module>
+    <module>ch11-equifax-timeline-lab</module>
+    <module>ch11-log4shell-breach-replay</module>
+    <module>ch12-privilege-segregation-demo</module>
+    <module>ch12-secure-failures-lab</module>
+    <module>ch12-secure-style-comparison</module>
+    <module>ch12-security-first-adr</module>
+    <module>ch12-zero-trust-reference</module>
+    <module>ch13-compliance-as-code-pack</module>
+    <module>ch13-data-residency-router</module>
+    <module>ch13-governance-operating-model</module>
+    <module>ch13-immutable-audit-log</module>
+    <module>ch13-regulation-control-matrix</module>
+    <module>ch14-agentic-self-healing</module>
+    <module>ch14-ai-security-triage</module>
+    <module>ch14-crypto-agility-pqc</module>
+    <module>ch14-ethical-risk-checklist</module>
+    <module>ch14-federated-identity-multicloud</module>
+    <module>ch15-cicd-security-recipe</module>
+    <module>ch15-gateway-rate-limiting</module>
+    <module>ch15-grpc-security-recipe</module>
+    <module>ch15-istio-policy-recipe</module>
+    <module>ch15-jwt-filter-role-checks</module>
+    <module>ch15-k8s-security-contexts</module>
+    <module>ch15-kafka-security-recipe</module>
+    <module>ch15-oauth2-bff-flow</module>
+    <module>ch15-secure-rest-patterns</module>
+    <module>ch15-spring-vault-secrets</module>
+  </modules>
+</project>

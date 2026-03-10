@@ -1,0 +1,49 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.munishgarg.microsecurity</groupId>
+  <artifactId>book-1-foundations-core-security-aggregate</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Microservices Security book-1-foundations-core-security Aggregator</name>
+
+  <modules>
+    <module>ch1-attack-surface-mapper</module>
+    <module>ch1-principles-scorecard</module>
+    <module>ch1-role-based-learning-labs</module>
+    <module>ch1-sdlc-security-pipeline</module>
+    <module>ch1-security-shift-modeling</module>
+    <module>ch2-misconfig-api-abuse-lab</module>
+    <module>ch2-owasp-bola-lab</module>
+    <module>ch2-ssrf-impersonation-lab</module>
+    <module>ch2-stride-control-mapper</module>
+    <module>ch2-supply-chain-mini-sim</module>
+    <module>ch3-grpc-tls-authz</module>
+    <module>ch3-https-hardening</module>
+    <module>ch3-kafka-security-baseline</module>
+    <module>ch3-mtls-baseline</module>
+    <module>ch3-protocol-threat-comparison</module>
+    <module>ch4-auth-anti-patterns-lab</module>
+    <module>ch4-federation-multitenancy</module>
+    <module>ch4-identity-propagation</module>
+    <module>ch4-jwt-validation-rotation</module>
+    <module>ch4-oauth2-grants-demo</module>
+    <module>ch4-rbac-abac-demo</module>
+    <module>ch4-spring-auth-starter</module>
+    <module>ch4-token-validation-strategies</module>
+    <module>ch5-edge-observability</module>
+    <module>ch5-gateway-role-demo</module>
+    <module>ch5-geo-ip-rate-controls</module>
+    <module>ch5-idp-integration-patterns</module>
+    <module>ch5-perimeter-threat-mitigation</module>
+    <module>ch5-request-validation-edge</module>
+    <module>ch6-circuit-breaker-security</module>
+    <module>ch6-defensive-api-contracts</module>
+    <module>ch6-dynamic-policy-engine</module>
+    <module>ch6-gateway-throttling-redis</module>
+    <module>ch6-rate-algorithms-simulator</module>
+  </modules>
+</project>

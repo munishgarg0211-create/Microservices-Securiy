@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.munishgarg.microsecurity</groupId>
+  <artifactId>book-2-infrastructure-devsecops-aggregate</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Microservices Security book-2-infrastructure-devsecops Aggregator</name>
+
+  <modules>
+    <module>bonus-container-hardening-lab</module>
+    <module>bonus-incident-response-runbook</module>
+    <module>bonus-observability-stack-guide</module>
+    <module>bonus-prod-deployment-gates</module>
+    <module>ch10-alerting-response-playbooks</module>
+    <module>ch10-anomaly-detection-lab</module>
+    <module>ch10-centralized-enriched-logs</module>
+    <module>ch10-metrics-traces-correlation</module>
+    <module>ch10-security-monitoring-slos</module>
+    <module>ch7-audit-runtime-protection</module>
+    <module>ch7-image-hygiene-signing</module>
+    <module>ch7-k8s-rbac-isolation</module>
+    <module>ch7-network-policy-microseg</module>
+    <module>ch7-secrets-pod-security</module>
+    <module>ch8-egress-control-routing</module>
+    <module>ch8-istio-authz-traffic</module>
+    <module>ch8-istio-mtls-identity</module>
+    <module>ch8-mesh-concepts-demo</module>
+    <module>ch8-mesh-observability-enforcement</module>
+    <module>ch9-agile-threat-model-lite</module>
+    <module>ch9-devsecops-template</module>
+    <module>ch9-policy-as-code-cicd</module>
+    <module>ch9-sast-dast-pipeline</module>
+    <module>ch9-secrets-sbom-supplychain</module>
+  </modules>
+</project>
