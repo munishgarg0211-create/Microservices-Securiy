@@ -1,9 +1,12 @@
 package com.munishgarg.microsecurity.book1.ch4_rbac_abac_demo;
 
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -15,17 +18,24 @@ public class DemoController {
     public DemoController(DemoService demoService) {
         this.demoService = demoService;
     }
-    // mode selects good practice (secure) vs intentionally bad practice (insecure).
-    // params carries chapter-specific inputs so one endpoint can demo different controls.
-    // Production copy/paste checklist:
-    // 1) Treat request params as untrusted input and validate strictly.
-    // 2) Use authenticated principal/claims from security context for auth decisions.
-    // 3) Keep authorization/business decisions in service/policy layer, not in controllers.
 
-    @GetMapping
-    public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
-            @RequestParam Map<String, String> params) {
-        return demoService.demo(mode, params);
+    // Role-Based Access Control (RBAC) - Requires the ADMIN authority
+    // The ROLE_ prefix is handled automatically by hasRole in Spring Security
+    @GetMapping("/admin-settings")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Map<String, String> getAdminSettings(@AuthenticationPrincipal UserDetails userDetails) {
+        return demoService.getAdminSettings(userDetails.getUsername());
+    }
+
+    // Attribute-Based Access Control (ABAC) - Requires ownership of the specifically requested resource.
+    // We call an external Bean 'docSecurity' and pass the method argument and authentication context.
+    // Also allows admins to bypass ownership checks.
+    @GetMapping("/documents/{docId}")
+    @PreAuthorize("hasRole('ADMIN') or @docSecurity.isOwner(#docId, authentication.name)")
+    public Map<String, String> getDocument(
+            @PathVariable("docId") String docId, 
+            @AuthenticationPrincipal UserDetails userDetails) {
+        
+        return demoService.getDocument(docId, userDetails.getUsername());
     }
 }

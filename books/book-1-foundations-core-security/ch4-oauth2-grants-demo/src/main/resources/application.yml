@@ -1,5 +1,39 @@
 spring:
   application:
     name: ch4-oauth2-grants-demo
+  security:
+    oauth2:
+      client:
+        registration:
+          # 1. Authorization Code Grant (User Login)
+          # Used to authenticate humans and perform actions on their behalf
+          webapp-client:
+            client-id: "book-demo-webapp"
+            client-secret: "secret"
+            # In a real app, this is OIDC provider like Keycloak, Okta, etc.
+            provider: custom-provider
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: openid, profile, read
+          
+          # 2. Client Credentials Grant (Machine to Machine)
+          # Used by this microservice to call downstream APIs on its own behalf
+          backend-service:
+            client-id: "book-demo-service"
+            client-secret: "secret"
+            provider: custom-provider
+            authorization-grant-type: client_credentials
+            scope: internal-api
+            
+        provider:
+          custom-provider:
+            # These are placeholder URIs to demonstrate the configuration.
+            # In a real scenario, this would point to the Authorization Server's endpoints.
+            authorization-uri: http://localhost:9000/oauth2/authorize
+            token-uri: http://localhost:9000/oauth2/token
+            jwk-set-uri: http://localhost:9000/oauth2/jwks
+            user-info-uri: http://localhost:9000/userinfo
+            user-name-attribute: sub
+
 server:
-  port: 8080
+  port: 8081

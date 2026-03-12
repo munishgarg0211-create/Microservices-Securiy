@@ -1,5 +1,13 @@
 spring:
   application:
     name: ch4-jwt-validation-rotation
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # In production, this points to your Identity Provider (e.g., Keycloak, Okta, Auth0)
+          # The application fetches the public keys from this endpoint to validate JWT signatures.
+          # Keys are automatically cached and rotated based on HTTP Cache-Control headers.
+          jwk-set-uri: "http://localhost:9000/oauth2/jwks"
 server:
   port: 8080

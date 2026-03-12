@@ -1,9 +1,12 @@
 package com.munishgarg.microsecurity.book1.ch4_oauth2_grants_demo;
 
 import java.util.Map;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -15,17 +18,25 @@ public class DemoController {
     public DemoController(DemoService demoService) {
         this.demoService = demoService;
     }
-    // mode selects good practice (secure) vs intentionally bad practice (insecure).
-    // params carries chapter-specific inputs so one endpoint can demo different controls.
-    // Production copy/paste checklist:
-    // 1) Treat request params as untrusted input and validate strictly.
-    // 2) Use authenticated principal/claims from security context for auth decisions.
-    // 3) Keep authorization/business decisions in service/policy layer, not in controllers.
 
-    @GetMapping
-    public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
-            @RequestParam Map<String, String> params) {
-        return demoService.demo(mode, params);
+    // 1. Authorization Code Flow Example
+    // This endpoint represents a page a user visits. Spring Security intercepts the request,
+    // redirects the user to login, and then extracts their profile into the OAuth2User.
+    @GetMapping("/auth-code")
+    public Map<String, Object> getAuthorizationCodeDemo(@AuthenticationPrincipal OAuth2User oauth2User) {
+        String username = oauth2User != null ? oauth2User.getName() : "anonymous";
+        return demoService.demoAuthorizationCodeFlow(username);
+    }
+
+    // 2. Client Credentials Flow Example
+    // This endpoint demonstrates the server retrieving a token for ITSELF to call another API.
+    // Notice it doesn't need an @AuthenticationPrincipal because it's a machine-to-machine flow.
+    @GetMapping("/client-credentials")
+    public Map<String, Object> getClientCredentialsDemo(
+            @RegisteredOAuth2AuthorizedClient("backend-service") OAuth2AuthorizedClient authorizedClient) {
+        
+        // This token was retrieved securely in the background using the client id and secret.
+        String token = authorizedClient.getAccessToken().getTokenValue();
+        return demoService.demoClientCredentialsFlow(token);
     }
 }

@@ -18,21 +18,16 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch4-oauth2-grants-demo"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+    void authCodeEndpoint_ShouldRedirectToLogin_WhenUnauthenticated() throws Exception {
+        mockMvc.perform(get("/api/demo/auth-code"))
+                .andExpect(status().is3xxRedirection());
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch4-oauth2-grants-demo"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+    void clientCredentials_ShouldRedirectToLogin_WhenUnauthenticated() throws Exception {
+        // Even though this is machine-to-machine, the endpoint itself is protected by default
+        // because we only permitted /api/demo/public/** in SecurityConfig
+        mockMvc.perform(get("/api/demo/client-credentials"))
+                .andExpect(status().is3xxRedirection());
     }
 }

@@ -1,9 +1,11 @@
 package com.munishgarg.microsecurity.book1.ch4_federation_multitenancy;
 
 import java.util.Map;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -15,17 +17,24 @@ public class DemoController {
     public DemoController(DemoService demoService) {
         this.demoService = demoService;
     }
-    // mode selects good practice (secure) vs intentionally bad practice (insecure).
-    // params carries chapter-specific inputs so one endpoint can demo different controls.
-    // Production copy/paste checklist:
-    // 1) Treat request params as untrusted input and validate strictly.
-    // 2) Use authenticated principal/claims from security context for auth decisions.
-    // 3) Keep authorization/business decisions in service/policy layer, not in controllers.
 
-    @GetMapping
-    public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
-            @RequestParam Map<String, String> params) {
-        return demoService.demo(mode, params);
+    // Tenant Isolation
+    // Enforces that the JWT must contain the specific tenant_id matching the path variable.
+    // E.g., if path is 'acme', user must have 'ROLE_TENANT_ACME'.
+    @GetMapping("/tenant/{tenantId}/data")
+    @PreAuthorize("hasRole('TENANT_' + #tenantId.toUpperCase())")
+    public Map<String, String> getTenantData(
+            @PathVariable("tenantId") String tenantId, 
+            Authentication authentication) {
+        
+        return demoService.getTenantData(tenantId, authentication.getName());
+    }
+
+    // Standard RBAC
+    // Allows us to still use standard roles alongside our custom tenant logic.
+    @GetMapping("/system/health")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Map<String, String> getSystemHealth(Authentication authentication) {
+        return demoService.getSystemHealth(authentication.getName());
     }
 }
