@@ -1,5 +1,6 @@
 package com.munishgarg.microsecurity.book1.ch4_auth_anti_patterns_lab;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,22 +18,63 @@ class DemoControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    // --- BOLA / IDOR Tests ---
+
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void vulnerableDataEndpoint_AllowsAliceToReadBobsData() throws Exception {
+        // Anti-pattern: Alice authenticated, but requesting Bob's data
+        mockMvc.perform(get("/api/lab/vulnerable/data/bob")
+                        .with(httpBasic("alice", "password")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch4-auth-anti-patterns-lab"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.owner").value("bob")); 
+                // Alice just successfully stole Bob's data!
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void secureDataEndpoint_AllowsAliceToReadAlicesData() throws Exception {
+        // Secure pattern: Alice requesting her own data
+        mockMvc.perform(get("/api/lab/secure/data/alice")
+                        .with(httpBasic("alice", "password")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch4-auth-anti-patterns-lab"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.owner").value("alice"));
+    }
+
+    @Test
+    void secureDataEndpoint_BlocksAliceFromReadingBobsData() throws Exception {
+        // Secure pattern: Alice requesting Bob's data is blocked by @PreAuthorize
+        mockMvc.perform(get("/api/lab/secure/data/bob")
+                        .with(httpBasic("alice", "password")))
+                .andExpect(status().isForbidden()); 
+                // Returns 403 Forbidden
+    }
+
+
+    // --- Missing Function Level Access Control Tests ---
+
+    @Test
+    void vulnerableAdminEndpoint_AllowsAliceToAccessAdminSettings() throws Exception {
+        // Anti-pattern: Alice (ROLE_USER) guessing the admin URL
+        mockMvc.perform(get("/api/lab/vulnerable/admin/settings")
+                        .with(httpBasic("alice", "password")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.setting").value("Global Application Configuration"));
+                // Alice just accessed the admin panel!
+    }
+
+    @Test
+    void secureAdminEndpoint_BlocksAliceFromAccessingAdminSettings() throws Exception {
+        // Secure pattern: Alice correctly blocked
+        mockMvc.perform(get("/api/lab/secure/admin/settings")
+                        .with(httpBasic("alice", "password")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void secureAdminEndpoint_AllowsAdminToAccessAdminSettings() throws Exception {
+        // Secure pattern: Admin correctly allowed
+        mockMvc.perform(get("/api/lab/secure/admin/settings")
+                        .with(httpBasic("admin", "password")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.setting").value("Global Application Configuration"));
     }
 }

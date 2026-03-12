@@ -1,7 +1,6 @@
 package com.munishgarg.microsecurity.book1.ch4_auth_anti_patterns_lab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
@@ -12,23 +11,20 @@ class DemoServiceTest {
     private final DemoService service = new DemoService();
 
     @Test
-    void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
+    void getUserData_ShouldReturnDataWithOwnerId() {
+        Map<String, String> result = service.getUserData("alice");
 
         assertNotNull(result);
-        assertEquals("ch4-auth-anti-patterns-lab", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
+        assertEquals("success", result.get("status"));
+        assertEquals("alice", result.get("owner"));
     }
 
     @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
+    void getAdminSettings_ShouldReturnGlobalConfig() {
+        Map<String, String> result = service.getAdminSettings();
 
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+        assertNotNull(result);
+        assertEquals("success", result.get("status"));
+        assertEquals("Global Application Configuration", result.get("setting"));
     }
 }
