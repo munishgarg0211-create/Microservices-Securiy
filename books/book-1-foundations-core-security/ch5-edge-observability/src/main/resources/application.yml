@@ -1,5 +1,34 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: ch5-edge-observability
-server:
-  port: 8080
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
+# Logging Configuration
+logging:
+  pattern:
+    # Notice [%X{traceId:-n/a}]
+    # This instructs Logback to extract the 'traceId' from the Mapped Diagnostic Context (MDC).
+    # If it exists, it's printed; otherwise, it prints 'n/a'.
+    # This is critical for distributed tracing across microservices.
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - [%X{traceId:-n/a}] [%X{clientIp:-n/a}] - %msg%n"

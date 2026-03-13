@@ -1,5 +1,23 @@
 spring:
   application:
     name: ch5-gateway-role-demo
+  cloud:
+    gateway:
+      routes:
+        - id: backend_route
+          uri: http://127.0.0.1:8080
+          predicates:
+            - Path=/api/backend/**
+          filters:
+            - RewritePath=/api/backend/(?<segment>.*), /internal/backend/${segment}
+            # Demonstration of mutating traffic at the edge before it hits the backend
+            - AddRequestHeader=X-Gateway-Routed, true
+            
 server:
   port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"

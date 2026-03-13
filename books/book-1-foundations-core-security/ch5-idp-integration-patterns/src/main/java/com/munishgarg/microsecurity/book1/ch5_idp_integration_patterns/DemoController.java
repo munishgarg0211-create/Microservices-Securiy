@@ -1,31 +1,41 @@
 package com.munishgarg.microsecurity.book1.ch5_idp_integration_patterns;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/demo")
 public class DemoController {
 
-    private final DemoService demoService;
+    /**
+     * This endpoint demonstrates extracting federated identity data directly from the
+     * OIDC token provided by the external IdP (e.g., Google or Keycloak).
+     * Notice we don't query a local `users` database.
+     */
+    @GetMapping("/me")
+    public Map<String, Object> getProfile(@AuthenticationPrincipal OidcUser principal) {
+        Map<String, Object> profile = new LinkedHashMap<>();
+        
+        // Defensive check: In a real app with pure oauth2Login, this shouldn't be null
+        // if the request reached the controller securely.
+        if (principal == null) {
+            profile.put("error", "No OIDC user found in security context.");
+            return profile;
+        }
 
-    public DemoController(DemoService demoService) {
-        this.demoService = demoService;
-    }
-    // mode selects good practice (secure) vs intentionally bad practice (insecure).
-    // params carries chapter-specific inputs so one endpoint can demo different controls.
-    // Production copy/paste checklist:
-    // 1) Treat request params as untrusted input and validate strictly.
-    // 2) Use authenticated principal/claims from security context for auth decisions.
-    // 3) Keep authorization/business decisions in service/policy layer, not in controllers.
-
-    @GetMapping
-    public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
-            @RequestParam Map<String, String> params) {
-        return demoService.demo(mode, params);
+        profile.put("status", "success");
+        profile.put("message", "User identity successfully established via Identity Provider delegation.");
+        
+        // Extracting standardized OIDC claims
+        profile.put("subject", principal.getSubject());
+        profile.put("fullName", principal.getFullName());
+        profile.put("email", principal.getEmail());
+        
+        return profile;
     }
 }

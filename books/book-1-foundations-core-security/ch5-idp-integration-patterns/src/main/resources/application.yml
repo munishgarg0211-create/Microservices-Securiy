@@ -1,5 +1,28 @@
 spring:
   application:
     name: ch5-idp-integration-patterns
+  security:
+    oauth2:
+      client:
+        registration:
+          # We use a mock Google OIDC configuration for demonstration.
+          # In a real environment, you'd replace 'mock-client-id' with actual credentials.
+          google:
+            client-id: mock-google-client-id
+            client-secret: mock-google-client-secret
+          
+          # Demonstrating integration with an enterprise IdP like Keycloak or Okta.
+          corporate-idp:
+            provider: keycloak
+            client-id: corporate-webapp
+            client-secret: corporate-secret
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            scope: openid, profile, email
+        
+        provider:
+          keycloak:
+            issuer-uri: https://idp.example.corporate.local/realms/engineering
+            
 server:
   port: 8080

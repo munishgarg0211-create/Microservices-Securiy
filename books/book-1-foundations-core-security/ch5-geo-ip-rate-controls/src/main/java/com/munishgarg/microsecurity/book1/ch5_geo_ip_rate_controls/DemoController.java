@@ -1,31 +1,41 @@
 package com.munishgarg.microsecurity.book1.ch5_geo_ip_rate_controls;
 
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/demo")
 public class DemoController {
 
-    private final DemoService demoService;
-
-    public DemoController(DemoService demoService) {
-        this.demoService = demoService;
-    }
-    // mode selects good practice (secure) vs intentionally bad practice (insecure).
-    // params carries chapter-specific inputs so one endpoint can demo different controls.
-    // Production copy/paste checklist:
-    // 1) Treat request params as untrusted input and validate strictly.
-    // 2) Use authenticated principal/claims from security context for auth decisions.
-    // 3) Keep authorization/business decisions in service/policy layer, not in controllers.
-
+    /**
+     * The @RateLimiter annotation links this endpoint directly to the "api-limiter"
+     * configuration defined in application.yml.
+     * 
+     * If more than 5 requests arrive within the 10-second window, Resilience4j 
+     * throws a RequestNotPermitted exception, short-circuiting this method entirely.
+     */
     @GetMapping
-    public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
-            @RequestParam Map<String, String> params) {
-        return demoService.demo(mode, params);
+    @RateLimiter(name = "api-limiter")
+    public Map<String, Object> getProtectedResource(@RequestParam(required = false) String mode) {
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("project", "ch5-geo-ip-rate-controls");
+        data.put("status", "success");
+        
+        if ("insecure".equalsIgnoreCase(mode)) {
+            data.put("mode", "insecure");
+            data.put("expectedBehavior", "Vulnerable to flooding and regional attacks");
+        } else {
+            data.put("mode", "secure");
+            data.put("controlFamily", "Perimeter Protection");
+            data.put("controlDecision", "Allow (Passed Geo-IP and Rate Limiter)");
+            data.put("message", "Request permitted. You passed both the Geo-IP filter and the Rate Limiter.");
+        }
+        
+        return data;
     }
 }

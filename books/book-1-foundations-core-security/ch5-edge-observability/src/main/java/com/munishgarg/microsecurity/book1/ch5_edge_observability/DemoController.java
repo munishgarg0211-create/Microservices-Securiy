@@ -1,31 +1,41 @@
 package com.munishgarg.microsecurity.book1.ch5_edge_observability;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/demo")
+@RequestMapping("/api")
 public class DemoController {
 
-    private final DemoService demoService;
+    private static final Logger log = LoggerFactory.getLogger(DemoController.class);
 
-    public DemoController(DemoService demoService) {
-        this.demoService = demoService;
+    @GetMapping("/process")
+    public Map<String, String> processData() {
+        log.info("Executing core business logic. Observability context is automatically injected from the MDC.");
+        
+        Map<String, String> response = new LinkedHashMap<>();
+        response.put("status", "success");
+        response.put("message", "Data processed. Check the application logs for the automatically injected Trace ID.");
+        return response;
     }
-    // mode selects good practice (secure) vs intentionally bad practice (insecure).
-    // params carries chapter-specific inputs so one endpoint can demo different controls.
-    // Production copy/paste checklist:
-    // 1) Treat request params as untrusted input and validate strictly.
-    // 2) Use authenticated principal/claims from security context for auth decisions.
-    // 3) Keep authorization/business decisions in service/policy layer, not in controllers.
 
-    @GetMapping
-    public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
-            @RequestParam Map<String, String> params) {
-        return demoService.demo(mode, params);
+    @GetMapping("/demo")
+    public Map<String, Object> getDemoPayload(@org.springframework.web.bind.annotation.RequestParam(defaultValue = "secure") String mode) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("project", "ch5-edge-observability");
+        response.put("mode", mode);
+        
+        if ("insecure".equalsIgnoreCase(mode)) {
+            response.put("expectedBehavior", "Actuator endpoints exposed without auth");
+        } else {
+            response.put("controlFamily", "OBSERVABILITY");
+            response.put("controlDecision", "Secure Actuator via HTTP Basic");
+        }
+        return response;
     }
 }

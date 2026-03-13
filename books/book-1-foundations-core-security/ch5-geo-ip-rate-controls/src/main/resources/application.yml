@@ -1,5 +1,15 @@
 spring:
   application:
     name: ch5-geo-ip-rate-controls
+
 server:
   port: 8080
+
+resilience4j:
+  ratelimiter:
+    instances:
+      api-limiter:
+        limitForPeriod: 5              # Allow 5 requests...
+        limitRefreshPeriod: 10s        # ...every 10 seconds.
+        timeoutDuration: 0s            # If exceeded, fail immediately (don't queue threads)
+        registerHealthIndicator: true  # Make metrics available to Actuator
