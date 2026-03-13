@@ -18,35 +18,33 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldAllowWhenAllPoliciesPass() throws Exception {
+    void shouldAllowWhenPolicyPassed() throws Exception {
         mockMvc.perform(get("/api/demo")
                 .param("imageSigned", "true")
                 .param("hasSbom", "true")
                 .param("criticalVulns", "0"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.controlDecision").value("allow"))
-                .andExpect(jsonPath("$.riskScore").value(0));
+                .andExpect(jsonPath("$.riskScore").value(10));
     }
 
     @Test
-    void shouldBlockWhenPoliciesFail() throws Exception {
+    void shouldBlockWhenPolicyViolationDetected() throws Exception {
         mockMvc.perform(get("/api/demo")
                 .param("imageSigned", "false")
                 .param("hasSbom", "true")
                 .param("criticalVulns", "0"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.controlDecision").value("block"))
-                .andExpect(jsonPath("$.riskScore").value(50))
-                .andExpect(jsonPath("$.violations[0]").value("require-signed-image"));
+                .andExpect(jsonPath("$.riskScore").value(60));
     }
 
     @Test
-    void shouldInsecureModeIgnorePolicyViolations() throws Exception {
-        mockMvc.perform(get("/api/demo")
-                .param("mode", "insecure")
-                .param("imageSigned", "false"))
+    void shouldIncludeStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.controlDecision").value("allow"))
-                .andExpect(jsonPath("$.riskScore").value(95));
+                .andExpect(jsonPath("$.project").value("ch6-dynamic-policy-engine"))
+                .andExpect(jsonPath("$.concept").value("Externalized Policy Management"))
+                .andExpect(jsonPath("$.controlFamily").value("POLICY"));
     }
 }

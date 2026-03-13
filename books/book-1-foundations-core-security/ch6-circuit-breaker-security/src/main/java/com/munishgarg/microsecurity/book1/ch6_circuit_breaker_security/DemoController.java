@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Demonstrates resilient implementation using Circuit Breaker and Bulkhead.
+ */
 @RestController
 @RequestMapping("/api/demo")
 public class DemoController {
@@ -15,22 +18,16 @@ public class DemoController {
     public DemoController(DemoService demoService) {
         this.demoService = demoService;
     }
-    // mode selects good practice (secure) vs intentionally bad practice (insecure).
-    // params carries chapter-specific inputs so one endpoint can demo different controls.
-    // Production copy/paste checklist:
-    // 1) Treat request params as untrusted input and validate strictly.
-    // 2) Use authenticated principal/claims from security context for auth decisions.
-    // 3) Keep authorization/business decisions in service/policy layer, not in controllers.
 
+    /**
+     * Executes the resilient service demo.
+     * @param shouldFail Simulates a downstream failure.
+     * @param delayMs Simulates downstream latency to trigger bulkhead/timeouts.
+     */
     @GetMapping
     public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
             @RequestParam(defaultValue = "false") boolean shouldFail,
             @RequestParam(defaultValue = "0") long delayMs) {
-        
-        if ("insecure".equalsIgnoreCase(mode)) {
-            return demoService.demoInsecure(shouldFail, delayMs);
-        }
-        return demoService.demoSecure(shouldFail, delayMs);
+        return demoService.demo(shouldFail, delayMs);
     }
 }

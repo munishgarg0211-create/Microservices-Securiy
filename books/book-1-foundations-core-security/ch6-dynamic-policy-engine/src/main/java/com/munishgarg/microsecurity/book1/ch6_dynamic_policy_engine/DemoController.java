@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Demonstrates Dynamic Policy Engine: Externalized rule enforcement.
+ * Demonstrates secure implementation for Dynamic Policy Evaluation.
  */
 @RestController
 @RequestMapping("/api/demo")
@@ -19,15 +19,14 @@ public class DemoController {
         this.demoService = demoService;
     }
 
+    /**
+     * Executes the secure dynamic policy demo.
+     * Use query parameters like 'imageSigned', 'hasSbom', and 'criticalVulns' to simulate artifact metadata.
+     * Example (Allow): ?imageSigned=true&hasSbom=true&criticalVulns=0
+     * Example (Block): ?imageSigned=true&hasSbom=false
+     */
     @GetMapping
-    public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
-            @RequestParam Map<String, String> params) {
-        
-        if ("insecure".equalsIgnoreCase(mode)) {
-            return demoService.demoInsecure(params);
-        }
-        
-        return demoService.demoSecure(params);
+    public Map<String, Object> getDemo(@RequestParam Map<String, String> params) {
+        return demoService.demo(params);
     }
 }

@@ -18,21 +18,43 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldAllowWhenAllSecurityChecksPass() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("sslEnabled", "true")
+                .param("saslAuthenticated", "true")
+                .param("aclAuthorized", "true"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch3-kafka-security-baseline"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("allow"))
+                .andExpect(jsonPath("$.riskScore").value(14));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldDenyWhenSslIsMissing() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("sslEnabled", "false")
+                .param("saslAuthenticated", "true")
+                .param("aclAuthorized", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("deny"))
+                .andExpect(jsonPath("$.riskScore").value(96));
+    }
+
+    @Test
+    void shouldDenyWhenAclMissing() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("sslEnabled", "true")
+                .param("saslAuthenticated", "true")
+                .param("aclAuthorized", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("deny"));
+    }
+
+    @Test
+    void shouldReturnStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch3-kafka-security-baseline"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.concept").value("Event Bus Security - Kafka"))
+                .andExpect(jsonPath("$.controlFamily").value("MESSAGING"));
     }
 }

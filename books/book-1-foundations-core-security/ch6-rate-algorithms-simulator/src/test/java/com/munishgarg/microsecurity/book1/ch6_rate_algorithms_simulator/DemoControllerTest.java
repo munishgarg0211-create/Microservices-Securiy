@@ -18,35 +18,35 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldAllowTokenBucketInitially() throws Exception {
-        mockMvc.perform(get("/api/demo").param("algo", "token"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.controlDecision").value("allow"));
-    }
-
-    @Test
-    void shouldAllowLeakyBucketInitially() throws Exception {
-        mockMvc.perform(get("/api/demo").param("algo", "leaky"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.controlDecision").value("allow"));
-    }
-
-    @Test
-    void shouldThrottleWhenBurstExceededInTokenBucket() throws Exception {
-        // Capacity is 10. Requesting 11 times.
-        for (int i = 0; i < 10; i++) {
-            mockMvc.perform(get("/api/demo").param("algo", "token")).andExpect(status().isOk());
-        }
-        mockMvc.perform(get("/api/demo").param("algo", "token"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.controlDecision").value("throttle"));
-    }
-
-    @Test
-    void shouldInsecureModeBypassThrottling() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldAllowWhenAlgorithmHasCapacity() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("algorithm", "token"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.controlDecision").value("allow"))
-                .andExpect(jsonPath("$.riskScore").value(95));
+                .andExpect(jsonPath("$.riskScore").value(15));
+    }
+
+    @Test
+    void shouldThottleWhenCapacityExceeded() throws Exception {
+        // First few should pass
+        for(int i=0; i<10; i++) {
+            mockMvc.perform(get("/api/demo").param("algorithm", "leaky"));
+        }
+        
+        // This one should likely fail (capacity is 10)
+        mockMvc.perform(get("/api/demo")
+                .param("algorithm", "leaky"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("throttle"))
+                .andExpect(jsonPath("$.riskScore").value(88));
+    }
+
+    @Test
+    void shouldIncludeStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.project").value("ch6-rate-algorithms-simulator"))
+                .andExpect(jsonPath("$.concept").value("Rate Limiting Algorithms"))
+                .andExpect(jsonPath("$.controlFamily").value("RESILIENCE"));
     }
 }

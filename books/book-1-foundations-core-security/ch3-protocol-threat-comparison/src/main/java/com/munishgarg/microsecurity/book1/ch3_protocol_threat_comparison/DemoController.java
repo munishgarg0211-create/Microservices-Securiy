@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Demonstrates security comparison between different communication protocols.
+ */
 @RestController
 @RequestMapping("/api/demo")
 public class DemoController {
@@ -15,17 +18,15 @@ public class DemoController {
     public DemoController(DemoService demoService) {
         this.demoService = demoService;
     }
-    // mode selects good practice (secure) vs intentionally bad practice (insecure).
-    // params carries chapter-specific inputs so one endpoint can demo different controls.
-    // Production copy/paste checklist:
-    // 1) Treat request params as untrusted input and validate strictly.
-    // 2) Use authenticated principal/claims from security context for auth decisions.
-    // 3) Keep authorization/business decisions in service/policy layer, not in controllers.
 
+    /**
+     * Executes the secure protocol comparison demo.
+     * Use 'protocol' query parameter to evaluate different transport methods.
+     * Example (Success): ?protocol=gRPC%20+%20TLS
+     * Example (Deny): ?protocol=Plain%20HTTP
+     */
     @GetMapping
-    public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
-            @RequestParam Map<String, String> params) {
-        return demoService.demo(mode, params);
+    public Map<String, Object> getDemo(@RequestParam Map<String, String> params) {
+        return demoService.demo(params);
     }
 }

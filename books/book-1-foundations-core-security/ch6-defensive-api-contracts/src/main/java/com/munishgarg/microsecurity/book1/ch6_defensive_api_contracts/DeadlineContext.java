@@ -9,6 +9,10 @@ public class DeadlineContext {
         DEADLINE.set(deadline);
     }
 
+    public static void set(long millisFromNow) {
+        DEADLINE.set(Instant.now().plusMillis(millisFromNow));
+    }
+
     public static Instant get() {
         return DEADLINE.get();
     }

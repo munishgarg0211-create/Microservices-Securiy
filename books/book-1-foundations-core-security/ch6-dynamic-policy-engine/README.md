@@ -3,34 +3,37 @@
 - Book: book-1-foundations-core-security
 - Chapter: ch6
 - Status: executable-demo
-- Stack: Spring Boot 3.3.5, Java 21, Jackson
+- Suggested stack: Java 21, Spring Boot 3.x, JSON-based Policies
 
 ## Objective
-Implement a runtime-pluggable security policy engine that evaluates rules from an externalized JSON source without requiring code changes.
+Demonstrate the implementation of a dynamic policy engine that externalizes security rules, allowing for runtime-adjustable security gates without requiring code changes.
 
-## Mitigation Logic
-- **Control family**: `GOVERNANCE` / `ADMISSION_CONTROL`.
-- **Externalized Logic**: Security rules (e.g., "all images must be signed", "no critical vulnerabilities allowed") are stored in `policy.json`.
-- **Runtime Evaluation**: The `PolicyEngine` loads these rules at startup and evaluates them against request/deployment parameters.
-- **Fail-Closed**: If the policy engine cannot be reached or rules fail, the default behavior should be to block (though this demo focus is on the evaluation logic).
+## Secure Implementation Logic
+- **Control Family:** `POLICY` (Security Governance and Policy-as-Code).
+- **Core Principle:** Externalization of Logic. Hardcoding security rules (e.g., "required signed image") into the application makes the system rigid. A secure, flexible architecture externalizes these rules into a policy engine. This allows security teams to update policies (e.g., increasing strictness during an active threat) instantly and globally.
+- **Implementation:**
+    - The `DemoService` integrates with a `PolicyEngine` to evaluate incoming requests or artifacts.
+    - Policy rules (e.g., `require-signed-image`, `max-critical-vulns`) are loaded from an external source (simulated).
+    - The engine evaluates the provided metadata against these active rules.
+    - Deployment or processing is only allowed if all current policy gates are passed.
 
-## Demo Scope
-- **Policy Definition**: A `policy.json` file in `src/main/resources` defines the active rules and their risk impact.
-- **Secure Mode** (`mode=secure`):
-    - Passes parameters to the `PolicyEngine`.
-    - Returns a `block` decision if any rule is violated (risk > 0).
-    - Lists specific violations (e.g., `require-signed-image`).
-- **Insecure Mode** (`mode=insecure`):
-    - Bypasses the engine entirely, representing a "blind" deployment.
+## Code Demonstration Map
+<!-- CODE_MAP_START -->
+- `src/main/java/.../DemoController.java`: API entry point that accepts artifact metadata for policy evaluation.
+- `src/main/java/.../DemoService.java`: Orchestrates the policy evaluation process.
+- `src/main/java/.../PolicyEngine.java`: Implements the core logic for loading and evaluating dynamic JSON rules.
+- `src/test/java/.../DemoControllerTest.java`: Integration tests verifying policy enforcement and violation handling.
+- `src/test/java/.../DemoServiceTest.java`: Unit tests for the policy evaluation orchestration.
+<!-- CODE_MAP_END -->
 
-## Run Plan
-1. Start service: `mvn spring-boot:run` or `mvn test`.
-2. **Policy Pass**: `GET /api/demo?mode=secure&imageSigned=true&hasSbom=true&criticalVulns=0`.
-3. **Policy Block**: `GET /api/demo?mode=secure&imageSigned=false`.
-4. **Bypass**: `GET /api/demo?mode=insecure&imageSigned=false`.
+## Quick Start
+1. Build and Test: `mvn clean test`
+2. Run locally: `mvn spring-boot:run`
+3. Verify via Curl:
+    - Success (Compliant): `curl "http://localhost:8080/api/demo?imageSigned=true&hasSbom=true&criticalVulns=0"`
+    - Success (Violation): `curl "http://localhost:8080/api/demo?imageSigned=false&hasSbom=true"`
 
-## Code Map
-- `policy.json`: The source of truth for security rules.
-- `PolicyEngine.java`: Logic for rule parsing and parameter matching.
-- `DemoService.java`: Orchestrates the policy check.
-- `DemoControllerTest.java`: Validates enforcement across different parameter combinations.
+## Acceptance Criteria
+- Artifacts meeting all currently active policy rules resulting in `controlDecision: allow`.
+- Metadata violating any active rule resulting in `controlDecision: block` and a list of violations.
+- Response payloads include standard metadata (`riskScore`, `controlFamily`, `concept`).

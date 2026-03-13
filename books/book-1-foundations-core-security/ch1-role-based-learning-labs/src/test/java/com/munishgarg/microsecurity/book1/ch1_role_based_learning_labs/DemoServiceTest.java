@@ -1,7 +1,6 @@
 package com.munishgarg.microsecurity.book1.ch1_role_based_learning_labs;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
@@ -12,23 +11,27 @@ class DemoServiceTest {
     private final DemoService service = new DemoService();
 
     @Test
-    void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
+    void shouldAllowCorrectRoleAction() {
+        Map<String, Object> result = service.demo(Map.of("role", "SRE", "action", "deploy-service"));
 
         assertNotNull(result);
-        assertEquals("ch1-role-based-learning-labs", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
+        assertEquals("allow", result.get("controlDecision"));
+        assertEquals(12, result.get("riskScore"));
     }
 
     @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
+    void shouldDenyIncorrectRoleAction() {
+        Map<String, Object> result = service.demo(Map.of("role", "SRE", "action", "write-code"));
 
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+        assertNotNull(result);
+        assertEquals("deny", result.get("controlDecision"));
+        assertEquals(94, result.get("riskScore"));
+    }
+
+    @Test
+    void shouldIncludeStandardsMetadata() {
+        Map<String, Object> result = service.demo(Map.of());
+        assertEquals("ch1-role-based-learning-labs", result.get("project"));
+        assertEquals("AUTHZ", result.get("controlFamily"));
     }
 }

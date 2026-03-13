@@ -18,21 +18,34 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldReturnCompliantWhenAllPrinciplesMet() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("defenseInDepth", "true")
+                .param("leastPrivilege", "true")
+                .param("failSecurely", "true"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch1-principles-scorecard"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("compliant"))
+                .andExpect(jsonPath("$.complianceScore").value("100%"))
+                .andExpect(jsonPath("$.riskScore").value(15));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldReturnNonCompliantWhenAnyPrincipleFails() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("defenseInDepth", "true")
+                .param("leastPrivilege", "false")
+                .param("failSecurely", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("non-compliant"))
+                .andExpect(jsonPath("$.riskScore").value(85));
+    }
+
+    @Test
+    void shouldIncludeStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch1-principles-scorecard"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.concept").value("Security Principles Scorecard"))
+                .andExpect(jsonPath("$.controlFamily").value("GOVERNANCE"));
     }
 }

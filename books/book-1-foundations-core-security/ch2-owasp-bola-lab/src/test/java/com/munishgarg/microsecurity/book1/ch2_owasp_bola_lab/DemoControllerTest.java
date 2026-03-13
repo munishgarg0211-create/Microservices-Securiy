@@ -18,21 +18,31 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldAllowOwnerAccess() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("actor", "bob")
+                .param("resourceId", "bob_profile"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch2-owasp-bola-lab"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("allow"))
+                .andExpect(jsonPath("$.riskScore").value(10));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldDenyUnauthorizedAccess() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("actor", "alice")
+                .param("resourceId", "bob_profile"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("deny"))
+                .andExpect(jsonPath("$.riskScore").value(95));
+    }
+
+    @Test
+    void shouldReturnStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch2-owasp-bola-lab"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.concept").value("OWASP Top 10 - BOLA"))
+                .andExpect(jsonPath("$.controlFamily").value("AUTHZ"));
     }
 }

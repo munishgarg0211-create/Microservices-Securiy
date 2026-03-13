@@ -18,21 +18,43 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldPassPipelineWhenAllScansSuccess() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("sastPassed", "true")
+                .param("scaPassed", "true")
+                .param("criticalVulns", "0"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch1-sdlc-security-pipeline"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("pass"))
+                .andExpect(jsonPath("$.riskScore").value(10));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldBlockPipelineWhenCriticalVulnsExist() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("sastPassed", "true")
+                .param("scaPassed", "true")
+                .param("criticalVulns", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("block"))
+                .andExpect(jsonPath("$.riskScore").value(90));
+    }
+
+    @Test
+    void shouldBlockPipelineWhenSastFails() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("sastPassed", "false")
+                .param("scaPassed", "true")
+                .param("criticalVulns", "0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("block"));
+    }
+
+    @Test
+    void shouldIncludeStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch1-sdlc-security-pipeline"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.concept").value("Secure SDLC Pipeline"))
+                .andExpect(jsonPath("$.controlFamily").value("POLICY"));
     }
 }

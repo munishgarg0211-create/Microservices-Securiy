@@ -1,41 +1,38 @@
-# ch6 - Circuit Breaking and Bulkhead for Resilience
+# ch6 - Circuit Breaker and Bulkhead Security
 
 - Book: book-1-foundations-core-security
 - Chapter: ch6
 - Status: executable-demo
-- Stack: Resilience4j, Spring Boot 3.3.5, Java 21
+- Suggested stack: Java 21, Spring Boot 3.x, Resilience4j
 
 ## Objective
-Demonstrate secure fallback modes and fault isolation using Resilience patterns (Circuit Breaker & Bulkhead).
+Demonstrate service resilience by implementing the Circuit Breaker and Bulkhead patterns to protect microservices from cascading failures and resource exhaustion.
 
-## Mitigation Logic
-- **Control family**: `AVAILABILITY` / `RESILIENCE`.
-- **Circuit Breaker**: Prevents a cascading failure by "tripping" when a downstream service is unstable, allowing the system to fail fast and recover.
-- **Bulkhead**: Isolates resources for a specific downstream service so that its failure doesn't consume all system threads (preventing resource exhaustion).
-- **Graceful Fallback**: Ensures a secure, deterministic "cached" or "static" response is returned instead of a raw error or a hang.
+## Secure Implementation Logic
+- **Control Family:** `RESILIENCE` (System Stability and Fault Tolerance).
+- **Core Principle:** Fail Fast and Isolate. In a microservices architecture, downstream failures are inevitable. A secure system must detect these failures instantly (Circuit Breaker) and isolate them to prevent thread exhaustion (Bulkhead), eventually failing over to a safe fallback.
+- **Implementation:**
+    - The `DemoService` wraps unstable downstream calls using Resilience4j annotations (`@CircuitBreaker`, `@Bulkhead`).
+    - The **Circuit Breaker** monitors failure rates and transitions to an `OPEN` state to block further calls when thresholds are exceeded.
+    - The **Bulkhead** limits the number of concurrent calls to the specific downstream service, ensuring that slow responses don't consume all available system threads.
+    - A `fallback` method provides a consistent, safe response (e.g., static or cached data) to maintain system availability.
 
-## Demo Scope
-The demo simulates an unstable `DownstreamService` that can be instructed to fail or delay.
-- **Secure Mode** (`mode=secure`): Uses Resilience4j annotations to wrap the call.
-    - If `shouldFail=true`, the Circuit Breaker eventually opens, and the `fallback` method returns "Cached/Static Data".
-    - Risk is minimized as the system stays responsive.
-- **Insecure Mode** (`mode=insecure`): Calls the service directly.
-    - If `shouldFail=true`, the caller is directly impacted by a `RuntimeException`.
-    - Risk is elevated due to lack of fault isolation.
+## Code Demonstration Map
+<!-- CODE_MAP_START -->
+- `src/main/java/.../DemoController.java`: API entry point that triggers protected downstream calls.
+- `src/main/java/.../DemoService.java`: Implements resilience patterns using Circuit Breaker and Bulkhead annotations.
+- `src/test/java/.../DemoControllerTest.java`: Integration tests verifying successful calls and fallback activation.
+- `src/test/java/.../DemoServiceTest.java`: Unit tests for the resilience and fallback logic.
+<!-- CODE_MAP_END -->
 
-## Run Plan
-1. Start service: `mvn spring-boot:run` (from project root) or `mvn test` to verify.
-2. **Success Case**: `GET /api/demo?mode=secure&shouldFail=false`
-3. **Failure Case (Insecure)**: `GET /api/demo?mode=insecure&shouldFail=true` -> Raw error impact.
-4. **Failure Case (Secure)**: `GET /api/demo?mode=secure&shouldFail=true` -> Graceful fallback triggered.
+## Quick Start
+1. Build and Test: `mvn clean test`
+2. Run locally: `mvn spring-boot:run`
+3. Verify via Curl:
+    - Success (Healthy): `curl "http://localhost:8080/api/demo?shouldFail=false"`
+    - Success (Fallback): `curl "http://localhost:8080/api/demo?shouldFail=true"`
 
 ## Acceptance Criteria
-- Secure mode returns a deterministic fallback decision when downstream fails.
-- Insecure mode exposes the caller to raw downstream exceptions.
-- Resilience4j configuration (thresholds, window size) is externalized in `application.yml`.
-
-## Code Map
-- `DownstreamService.java`: Simulates the unstable dependency.
-- `DemoService.java`: Implements `@CircuitBreaker` and `@Bulkhead`.
-- `application.yml`: Resilience4j parameters.
-- `DemoControllerTest.java`: Verifies the state transitions and fallback outcomes.
+- Healthy downstream calls resulting in `controlDecision: allow`.
+- Downstream failures or latency triggering `controlDecision: fallback`.
+- Response payloads include standard metadata (`riskScore`, `controlFamily`, `concept`).

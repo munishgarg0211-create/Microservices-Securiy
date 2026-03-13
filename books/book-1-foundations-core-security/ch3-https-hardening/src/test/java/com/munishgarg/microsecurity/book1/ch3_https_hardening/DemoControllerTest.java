@@ -18,21 +18,29 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldAllowTls12() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("tlsVersion", "1.2"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch3-https-hardening"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("allow"))
+                .andExpect(jsonPath("$.riskScore").value(12));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldDenyDeprecatedTls10() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("tlsVersion", "1.0"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("deny"))
+                .andExpect(jsonPath("$.riskScore").value(90));
+    }
+
+    @Test
+    void shouldReturnStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch3-https-hardening"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.concept").value("Transport Layer Security - HTTPS"))
+                .andExpect(jsonPath("$.controlFamily").value("TRANSPORT"));
     }
 }

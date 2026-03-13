@@ -9,33 +9,36 @@ public class DemoService {
 
     private final PolicyEngine policyEngine;
 
+    private static final String PROJECT = "ch6-dynamic-policy-engine";
+    private static final String BOOK = "book-1-foundations-core-security";
+    private static final String OBJECTIVE = "Implement a dynamic policy engine for externalized, runtime-adjustable security rules.";
+    private static final String CONCEPT = "Externalized Policy Management";
+    private static final String CONTROL_FAMILY = "POLICY";
+
     public DemoService(PolicyEngine policyEngine) {
         this.policyEngine = policyEngine;
     }
 
     /**
-     * SECURE MODE: Enforces dynamic policies from JSON.
+     * Executes a dynamic policy evaluation.
+     * Enforces externalized rules loaded from a separate configuration source.
      */
-    public Map<String, Object> demoSecure(Map<String, String> params) {
+    public Map<String, Object> demo(Map<String, String> params) {
         PolicyEngine.PolicyResult result = policyEngine.evaluate(params);
-        return buildResponse("secure", 
+        return buildResponse(
             result.allowed() ? "allow" : "block", 
             result.allowed() ? "All dynamic policy gates passed." : "Policy violations detected: " + result.violations(), 
             result.violations(), 
             result.riskScore());
     }
 
-    /**
-     * INSECURE MODE: Bypasses policy engine.
-     */
-    public Map<String, Object> demoInsecure(Map<String, String> params) {
-        return buildResponse("insecure", "allow", "Policy engine bypassed. Artifacts deployed without validation.", null, 95);
-    }
-
-    private Map<String, Object> buildResponse(String mode, String decision, String behavior, Object data, int risk) {
+    private Map<String, Object> buildResponse(String decision, String behavior, Object data, int risk) {
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("project", "ch6-dynamic-policy-engine");
-        result.put("mode", mode);
+        result.put("project", PROJECT);
+        result.put("book", BOOK);
+        result.put("concept", CONCEPT);
+        result.put("objective", OBJECTIVE);
+        result.put("controlFamily", CONTROL_FAMILY);
         result.put("controlDecision", decision);
         result.put("expectedBehavior", behavior);
         result.put("violations", data);

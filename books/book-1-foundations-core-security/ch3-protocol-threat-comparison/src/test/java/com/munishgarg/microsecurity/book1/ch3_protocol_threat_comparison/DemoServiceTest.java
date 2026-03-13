@@ -1,7 +1,6 @@
 package com.munishgarg.microsecurity.book1.ch3_protocol_threat_comparison;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
@@ -12,23 +11,27 @@ class DemoServiceTest {
     private final DemoService service = new DemoService();
 
     @Test
-    void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
+    void shouldApproveSecuregRPC() {
+        Map<String, Object> result = service.demo(Map.of("protocol", "gRPC + TLS"));
 
         assertNotNull(result);
-        assertEquals("ch3-protocol-threat-comparison", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
+        assertEquals("approved-transport", result.get("controlDecision"));
+        assertEquals(12, result.get("riskScore"));
     }
 
     @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
+    void shouldRejectPlainHttp() {
+        Map<String, Object> result = service.demo(Map.of("protocol", "Plain HTTP"));
 
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+        assertNotNull(result);
+        assertEquals("rejected-transport", result.get("controlDecision"));
+        assertEquals(95, result.get("riskScore"));
+    }
+
+    @Test
+    void shouldIncludeStandardsMetadata() {
+        Map<String, Object> result = service.demo(Map.of());
+        assertEquals("ch3-protocol-threat-comparison", result.get("project"));
+        assertEquals("THREAT", result.get("controlFamily"));
     }
 }

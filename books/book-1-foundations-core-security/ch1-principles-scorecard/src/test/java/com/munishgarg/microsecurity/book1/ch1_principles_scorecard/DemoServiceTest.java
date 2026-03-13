@@ -1,7 +1,6 @@
 package com.munishgarg.microsecurity.book1.ch1_principles_scorecard;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
@@ -12,23 +11,35 @@ class DemoServiceTest {
     private final DemoService service = new DemoService();
 
     @Test
-    void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
+    void shouldScoreArchitectureAsCompliant() {
+        Map<String, Object> result = service.demo(Map.of(
+            "defenseInDepth", "true", 
+            "leastPrivilege", "true", 
+            "failSecurely", "true"
+        ));
 
         assertNotNull(result);
-        assertEquals("ch1-principles-scorecard", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
+        assertEquals("compliant", result.get("controlDecision"));
+        assertEquals("100%", result.get("complianceScore"));
     }
 
     @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
+    void shouldScoreArchitectureAsNonCompliant() {
+        Map<String, Object> result = service.demo(Map.of(
+            "defenseInDepth", "false", 
+            "leastPrivilege", "true", 
+            "failSecurely", "true"
+        ));
 
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+        assertNotNull(result);
+        assertEquals("non-compliant", result.get("controlDecision"));
+        assertEquals(85, result.get("riskScore"));
+    }
+
+    @Test
+    void shouldIncludeStandardsMetadata() {
+        Map<String, Object> result = service.demo(Map.of());
+        assertEquals("ch1-principles-scorecard", result.get("project"));
+        assertEquals("GOVERNANCE", result.get("controlFamily"));
     }
 }

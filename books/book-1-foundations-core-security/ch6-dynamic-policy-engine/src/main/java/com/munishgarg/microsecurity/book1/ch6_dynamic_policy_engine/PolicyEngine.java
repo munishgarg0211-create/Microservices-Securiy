@@ -42,7 +42,7 @@ public class PolicyEngine {
     }
 
     public PolicyResult evaluate(Map<String, String> params) {
-        int totalRisk = 0;
+        int totalRisk = 10; // Base risk for any processed request
         List<String> violations = new ArrayList<>();
 
         for (Rule rule : rules) {
@@ -55,7 +55,7 @@ public class PolicyEngine {
             }
         }
 
-        return new PolicyResult(totalRisk <= 0, totalRisk, violations);
+        return new PolicyResult(violations.isEmpty(), totalRisk, violations);
     }
 
     public record Rule(String id, String field, String operator, String value, int riskImpact) {}

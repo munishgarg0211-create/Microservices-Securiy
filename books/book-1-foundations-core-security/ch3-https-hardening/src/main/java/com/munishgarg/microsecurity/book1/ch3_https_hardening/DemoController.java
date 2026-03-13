@@ -6,6 +6,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Demonstrates secure implementation for HTTPS/TLS hardening.
+ */
 @RestController
 @RequestMapping("/api/demo")
 public class DemoController {
@@ -15,17 +18,15 @@ public class DemoController {
     public DemoController(DemoService demoService) {
         this.demoService = demoService;
     }
-    // mode selects good practice (secure) vs intentionally bad practice (insecure).
-    // params carries chapter-specific inputs so one endpoint can demo different controls.
-    // Production copy/paste checklist:
-    // 1) Treat request params as untrusted input and validate strictly.
-    // 2) Use authenticated principal/claims from security context for auth decisions.
-    // 3) Keep authorization/business decisions in service/policy layer, not in controllers.
 
+    /**
+     * Executes the secure HTTPS demo.
+     * Use 'tlsVersion' query parameter to simulate client connection attempts.
+     * Example (Success): ?tlsVersion=1.2
+     * Example (Deny): ?tlsVersion=1.0
+     */
     @GetMapping
-    public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
-            @RequestParam Map<String, String> params) {
-        return demoService.demo(mode, params);
+    public Map<String, Object> getDemo(@RequestParam Map<String, String> params) {
+        return demoService.demo(params);
     }
 }

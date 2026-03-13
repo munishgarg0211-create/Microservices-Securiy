@@ -18,21 +18,43 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldReturnShieldedWhenShiftLeftIsEffective() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("designReview", "true")
+                .param("threatModeling", "true")
+                .param("earlyMitigationRate", "90"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch1-security-shift-modeling"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("shielded"))
+                .andExpect(jsonPath("$.riskScore").value(12));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldReturnExposedWhenModelingIsSkipped() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("designReview", "true")
+                .param("threatModeling", "false")
+                .param("earlyMitigationRate", "90"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("exposed"))
+                .andExpect(jsonPath("$.riskScore").value(88));
+    }
+
+    @Test
+    void shouldReturnExposedWhenMitigationRateIsLow() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("designReview", "true")
+                .param("threatModeling", "true")
+                .param("earlyMitigationRate", "50"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("exposed"));
+    }
+
+    @Test
+    void shouldIncludeStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch1-security-shift-modeling"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.concept").value("Security Shift-Left Modeling"))
+                .andExpect(jsonPath("$.controlFamily").value("THREAT"));
     }
 }

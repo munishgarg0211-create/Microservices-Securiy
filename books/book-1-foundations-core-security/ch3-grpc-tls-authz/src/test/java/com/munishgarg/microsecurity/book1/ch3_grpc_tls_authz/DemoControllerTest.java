@@ -18,21 +18,40 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldAllowWhenTlsAndTokenBothValid() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("tlsEnabled", "true")
+                .param("callTokenValid", "true"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch3-grpc-tls-authz"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("allow"))
+                .andExpect(jsonPath("$.riskScore").value(15));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldDenyWhenTlsDisabled() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("tlsEnabled", "false")
+                .param("callTokenValid", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("deny"))
+                .andExpect(jsonPath("$.riskScore").value(95));
+    }
+
+    @Test
+    void shouldDenyWhenTokenInvalid() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("tlsEnabled", "true")
+                .param("callTokenValid", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("deny"));
+    }
+
+    @Test
+    void shouldReturnStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch3-grpc-tls-authz"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.concept").value("gRPC Security - TLS and Authz"))
+                .andExpect(jsonPath("$.controlFamily").value("TRANSPORT"));
     }
 }

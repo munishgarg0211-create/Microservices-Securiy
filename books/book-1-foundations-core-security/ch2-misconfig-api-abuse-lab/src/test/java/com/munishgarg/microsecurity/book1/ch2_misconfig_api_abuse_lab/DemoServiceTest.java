@@ -1,7 +1,6 @@
 package com.munishgarg.microsecurity.book1.ch2_misconfig_api_abuse_lab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
@@ -12,23 +11,27 @@ class DemoServiceTest {
     private final DemoService service = new DemoService();
 
     @Test
-    void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
+    void shouldAllowWhenAttemptsUnderThreshold() {
+        Map<String, Object> result = service.demo(Map.of("attempts", "3"));
 
         assertNotNull(result);
-        assertEquals("ch2-misconfig-api-abuse-lab", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
+        assertEquals("allow", result.get("controlDecision"));
+        assertEquals(10, result.get("riskScore"));
     }
 
     @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
+    void shouldThrottleWhenAttemptsExceedThreshold() {
+        Map<String, Object> result = service.demo(Map.of("attempts", "10"));
 
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+        assertNotNull(result);
+        assertEquals("throttle", result.get("controlDecision"));
+        assertEquals(92, result.get("riskScore"));
+    }
+
+    @Test
+    void shouldIncludeStandardsMetadata() {
+        Map<String, Object> result = service.demo(Map.of());
+        assertEquals("ch2-misconfig-api-abuse-lab", result.get("project"));
+        assertEquals("THREAT", result.get("controlFamily"));
     }
 }

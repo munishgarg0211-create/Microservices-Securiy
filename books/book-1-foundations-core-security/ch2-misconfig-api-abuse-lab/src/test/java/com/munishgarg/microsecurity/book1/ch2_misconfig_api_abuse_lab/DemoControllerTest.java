@@ -18,21 +18,29 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldAllowUnderLimit() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("attempts", "3"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch2-misconfig-api-abuse-lab"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("allow"))
+                .andExpect(jsonPath("$.riskScore").value(10));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldThrottleOverLimit() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("attempts", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("throttle"))
+                .andExpect(jsonPath("$.riskScore").value(92));
+    }
+
+    @Test
+    void shouldReturnStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch2-misconfig-api-abuse-lab"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.concept").value("OWASP Top 10 - Security Misconfiguration"))
+                .andExpect(jsonPath("$.controlFamily").value("THREAT"));
     }
 }

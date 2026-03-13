@@ -1,7 +1,6 @@
 package com.munishgarg.microsecurity.book1.ch1_attack_surface_mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
@@ -12,23 +11,27 @@ class DemoServiceTest {
     private final DemoService service = new DemoService();
 
     @Test
-    void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
+    void shouldEvaluateSurfaceOptimized() {
+        Map<String, Object> result = service.demo(Map.of("endpoints", "10", "exposed", "1", "mfaEnforced", "true"));
 
         assertNotNull(result);
-        assertEquals("ch1-attack-surface-mapper", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
+        assertEquals("optimized", result.get("controlDecision"));
+        assertEquals(18, result.get("riskScore"));
     }
 
     @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
+    void shouldEvaluateSurfaceOverExposed() {
+        Map<String, Object> result = service.demo(Map.of("endpoints", "10", "exposed", "5", "mfaEnforced", "false"));
 
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+        assertNotNull(result);
+        assertEquals("over-exposed", result.get("controlDecision"));
+        assertEquals(88, result.get("riskScore"));
+    }
+
+    @Test
+    void shouldIncludeStandardsMetadata() {
+        Map<String, Object> result = service.demo(Map.of());
+        assertEquals("ch1-attack-surface-mapper", result.get("project"));
+        assertEquals("THREAT", result.get("controlFamily"));
     }
 }

@@ -8,18 +8,27 @@ import reactor.core.publisher.Mono;
 @Service
 public class DemoService {
 
-    public Mono<Map<String, Object>> demoSecure() {
-        return buildResponse("secure", "allow", "Request passed gateway throttling checks.", 15);
+    private static final String PROJECT = "ch6-gateway-throttling-redis";
+    private static final String BOOK = "book-1-foundations-core-security";
+    private static final String OBJECTIVE = "Implement distributed gateway throttling using Redis to protect services from high-volume traffic and DoS attacks.";
+    private static final String CONCEPT = "Perimeter Rate Limiting";
+    private static final String CONTROL_FAMILY = "RESILIENCE";
+
+    /**
+     * Executes a secure gateway processing demonstration.
+     * Enforces that requests arriving at the gateway are subject to Redis-backed rate limits.
+     */
+    public Mono<Map<String, Object>> demo() {
+        return buildResponse("allow", "Request successfully passed distributed gateway throttling checks.", 10);
     }
 
-    public Mono<Map<String, Object>> demoInsecure() {
-        return buildResponse("insecure", "allow", "Unguarded endpoint (simulated bypass).", 85);
-    }
-
-    private Mono<Map<String, Object>> buildResponse(String mode, String decision, String behavior, int risk) {
+    private Mono<Map<String, Object>> buildResponse(String decision, String behavior, int risk) {
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("project", "ch6-gateway-throttling-redis");
-        result.put("mode", mode);
+        result.put("project", PROJECT);
+        result.put("book", BOOK);
+        result.put("concept", CONCEPT);
+        result.put("objective", OBJECTIVE);
+        result.put("controlFamily", CONTROL_FAMILY);
         result.put("controlDecision", decision);
         result.put("expectedBehavior", behavior);
         result.put("riskScore", risk);

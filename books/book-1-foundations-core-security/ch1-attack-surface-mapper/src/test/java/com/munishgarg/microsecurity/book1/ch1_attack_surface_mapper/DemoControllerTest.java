@@ -18,21 +18,33 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldReturnOptimizedSurfaceWhenExposureIsLow() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("endpoints", "10")
+                .param("exposed", "1")
+                .param("mfaEnforced", "true"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch1-attack-surface-mapper"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("optimized"))
+                .andExpect(jsonPath("$.riskScore").value(18));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldReturnOverExposedWhenExposureIsHigh() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("endpoints", "10")
+                .param("exposed", "5")
+                .param("mfaEnforced", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("over-exposed"))
+                .andExpect(jsonPath("$.riskScore").value(88));
+    }
+
+    @Test
+    void shouldIncludeStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch1-attack-surface-mapper"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.concept").value("Attack Surface Analysis"))
+                .andExpect(jsonPath("$.controlFamily").value("THREAT"));
     }
 }

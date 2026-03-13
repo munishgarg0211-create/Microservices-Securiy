@@ -3,41 +3,38 @@
 - Book: book-1-foundations-core-security
 - Chapter: ch6
 - Status: executable-demo
-- Algorithms: Token Bucket, Leaky Bucket
+- Suggested stack: Java 21, Spring Boot 3.x, Custom Algorithm Impls
 
 ## Objective
-Simulate and compare the two most common rate-limiting algorithms used in microservices: Token Bucket (allowing controlled bursts) and Leaky Bucket (smooth constant rate).
+Demonstrate and compare two fundamental rate limiting algorithms used in microservice defense: the Token Bucket and the Leaky Bucket.
 
-## Mitigation Logic
-- **Control family**: `PERIMETER_SECURITY` / `PROTECTION`.
-- **Token Bucket**:
-    - Tokens are added to a "bucket" at a fixed rate.
-    - Each request consumes a token.
-    - Allows bursts of traffic up to the bucket's capacity.
-    - Common in API Gateways like Spring Cloud Gateway.
-- **Leaky Bucket**:
-    - Requests enter a bucket and "leak" out at a constant rate.
-    - Smoothing out traffic regardless of burst size.
-    - Useful for protecting downstream services with rigid processing limits.
+## Secure Implementation Logic
+- **Control Family:** `RESILIENCE` (System Stability and Defense-in-Depth).
+- **Core Principle:** Traffic Shaping and Smoothing. Rate limiting is a critical defense against DoS attacks and resource exhaustion. This project provides a simulator to understand how different algorithms manage traffic bursts and steady-state load.
+- **Implementation:**
+    - **Token Bucket:** Allows for bursts of traffic as long as "tokens" are available in the bucket. Once depleted, traffic is limited to a steady refill rate. Ideal for handling short spikes.
+    - **Leaky Bucket:** Enforces a perfectly smooth output rate regardless of the input burstiness. Requests enter a "leaky" bucket and are processed at a constant rate. Excess requests are discarded once the bucket is full.
+    - The `DemoService` allows the user to switch between these algorithms to observe their behavior under different simulated loads.
 
-## Demo Scope
-- **Algorithm Comparison**: Toggle between `token` and `leaky` implementations via query parameters.
-- **Stateful Simulation**: The simulators track state (tokens/water level) in-memory to demonstrate logic flow.
-- **Secure Mode** (`mode=secure`):
-    - Applies the selected algorithm and returns `throttle` if limits are exceeded.
-- **Insecure Mode** (`mode=insecure`):
-    - Demonstrates the risk of unprotected endpoints.
+## Code Demonstration Map
+<!-- CODE_MAP_START -->
+- `src/main/java/.../DemoController.java`: API entry point that accepts an `algorithm` parameter to simulate different rate limiting behaviors.
+- `src/main/java/.../DemoService.java`: Orchestrates the simulation logic across different bucket implementations.
+- `src/main/java/.../TokenBucket.java`: Implementation of the Token Bucket algorithm.
+- `src/main/java/.../LeakyBucket.java`: Implementation of the Leaky Bucket algorithm.
+- `src/test/java/.../DemoControllerTest.java`: Integration tests verifying burst handling and throttling logic for both algorithms.
+- `src/test/java/.../DemoServiceTest.java`: Unit tests for the algorithm simulation logic.
+<!-- CODE_MAP_END -->
 
-## Run Plan
-1. Start service: `mvn spring-boot:run` or `mvn test`.
-2. **Token Bucket Burst**:
-    - Call 10 times quickly: `GET /api/demo?mode=secure&algo=token`.
-    - Call 11th time: Observe `throttle`.
-3. **Compare with Leaky Bucket**:
-    - Observe how Leaky Bucket behaves more strictly under the same load.
+## Quick Start
+1. Build and Test: `mvn clean test`
+2. Run locally: `mvn spring-boot:run`
+3. Verify via Curl:
+    - Token Bucket: `curl "http://localhost:8080/api/demo?algorithm=token"`
+    - Leaky Bucket: `curl "http://localhost:8080/api/demo?algorithm=leaky"`
 
-## Code Map
-- `TokenBucket.java`: Logic for token replenishment and burst handling.
-- `LeakyBucket.java`: Logic for constant-rate "leaking" of requests.
-- `DemoService.java`: Orchestrates the simulation.
-- `DemoController.java`: API for toggling algorithms and modes.
+## Acceptance Criteria
+- Valid requests within capacity resulting in `controlDecision: allow`.
+- Requests exceeding the bucket capacity resulting in `controlDecision: throttle`.
+- Clear differentiation in behavior between 'token' (bursty) and 'leaky' (smooth) algorithms during repeated calls.
+- Response payloads include standard metadata (`riskScore`, `controlFamily`, `concept`).

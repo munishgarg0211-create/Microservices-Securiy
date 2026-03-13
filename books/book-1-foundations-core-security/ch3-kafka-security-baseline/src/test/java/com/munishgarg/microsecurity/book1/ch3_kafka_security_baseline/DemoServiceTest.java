@@ -1,7 +1,6 @@
 package com.munishgarg.microsecurity.book1.ch3_kafka_security_baseline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
@@ -12,23 +11,35 @@ class DemoServiceTest {
     private final DemoService service = new DemoService();
 
     @Test
-    void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
+    void shouldAllowWhenAllSecurityChecksPassed() {
+        Map<String, Object> result = service.demo(Map.of(
+            "sslEnabled", "true", 
+            "saslAuthenticated", "true", 
+            "aclAuthorized", "true"
+        ));
 
         assertNotNull(result);
-        assertEquals("ch3-kafka-security-baseline", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
+        assertEquals("allow", result.get("controlDecision"));
+        assertEquals(14, result.get("riskScore"));
     }
 
     @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
+    void shouldDenyWhenSslDisabled() {
+        Map<String, Object> result = service.demo(Map.of(
+            "sslEnabled", "false", 
+            "saslAuthenticated", "true", 
+            "aclAuthorized", "true"
+        ));
 
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+        assertNotNull(result);
+        assertEquals("deny", result.get("controlDecision"));
+        assertEquals(96, result.get("riskScore"));
+    }
+
+    @Test
+    void shouldIncludeStandardsMetadata() {
+        Map<String, Object> result = service.demo(Map.of());
+        assertEquals("ch3-kafka-security-baseline", result.get("project"));
+        assertEquals("MESSAGING", result.get("controlFamily"));
     }
 }

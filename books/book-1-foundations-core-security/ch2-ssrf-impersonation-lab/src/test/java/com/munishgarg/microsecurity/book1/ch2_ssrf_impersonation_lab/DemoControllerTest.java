@@ -18,21 +18,39 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldAllowPublicRequests() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("url", "https://public-api.example.com/data"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch2-ssrf-impersonation-lab"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("allow"))
+                .andExpect(jsonPath("$.isInternalResource").value(false));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldDenyInternalMetadataRequests() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("url", "http://169.254.169.254/latest/meta-data/"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("deny"))
+                .andExpect(jsonPath("$.isInternalResource").value(true))
+                .andExpect(jsonPath("$.riskScore").value(98));
+    }
+
+    @Test
+    void shouldDenyLocalhostRequests() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("url", "http://localhost:9090/admin"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("deny"))
+                .andExpect(jsonPath("$.isInternalResource").value(true));
+    }
+
+    @Test
+    void shouldReturnStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch2-ssrf-impersonation-lab"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.concept").value("OWASP Top 10 - SSRF"))
+                .andExpect(jsonPath("$.controlFamily").value("THREAT"));
     }
 }

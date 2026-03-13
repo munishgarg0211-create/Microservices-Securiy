@@ -3,35 +3,37 @@
 - Book: book-1-foundations-core-security
 - Chapter: ch6
 - Status: executable-demo
-- Stack: Spring Boot 3.3.5, Java 21
+- Suggested stack: Java 21, Spring Boot 3.x, Custom Interceptors
 
 ## Objective
-Implement defensive programming patterns like **Deadline Propagation** and **Fail-Fast** logic to protect system resources.
+Demonstrate defensive programming in microservices by implementing deadline propagation to prevent resource exhaustion and cascading delays.
 
-## Mitigation Logic
-- **Control family**: `AVAILABILITY` / `RESOURCE_PROTECTION`.
-- **Deadline Propagation**: Passing a "timeout budget" (via `X-Deadline-Ms` header) across service boundaries.
-- **Fail-Fast**: Checking the deadline budget *before* starting expensive work. If the budget is already exhausted, the request is rejected immediately.
-- **Abandonment**: Checking the deadline *during* work. if the budget expires mid-process, the operation is abandoned to prevent further resource waste.
+## Secure Implementation Logic
+- **Control Family:** `RESILIENCE` (System Stability and Defense-in-Depth).
+- **Core Principle:** Resource Conservation and Fail-Fast. In a distributed system, a slow service can cause a chain reaction of failures. Defensive API contracts enforce a strict "time budget" (deadline). If a service cannot complete its work within the budget, it must fail fast rather than continue consuming resources that won't yield a useful result.
+- **Implementation:**
+    - The `DemoService` uses a `DeadlineContext` (backed by `ThreadLocal`) to track the remaining time budget for a request.
+    - Before starting any heavy processing, the service checks `isExpired()`. If the deadline has already passed, it immediately returns an error.
+    - Long-running operations check the deadline periodically. If the deadline expires mid-processing, the operation is abandoned.
+    - This ensures that threads and CPU cycles are only spent on requests that have a chance of success, protecting the system from "zombie" requests.
 
-## Demo Scope
-The demo uses a `DeadlineInterceptor` to manage a `ThreadLocal` deadline context.
-- **Secure Mode** (`mode=secure`):
-    - Honors the `X-Deadline-Ms` header.
-    - Fails fast if the deadline has already passed.
-    - Rejects results if the deadline expires during a `Thread.sleep` simulation.
-- **Insecure Mode** (`mode=insecure`):
-    - Ignores the deadline context and always attempts to complete the work.
+## Code Demonstration Map
+<!-- CODE_MAP_START -->
+- `src/main/java/.../DemoController.java`: API entry point that accepts a `duration` parameter to simulate workload.
+- `src/main/java/.../DemoService.java`: Implements defensive logic by checking the `DeadlineContext` at multiple stages.
+- `src/main/java/.../DeadlineContext.java`: A utility class for propagating and checking request deadlines across threads.
+- `src/test/java/.../DemoControllerTest.java`: Integration tests verifying fail-fast behavior and successful completion within budgets.
+- `src/test/java/.../DemoServiceTest.java`: Unit tests for the deadline enforcement logic.
+<!-- CODE_MAP_END -->
 
-## Run Plan
-1. Start service: `mvn spring-boot:run` or `mvn test`.
-2. **Success Case**: `GET /api/demo?mode=secure&workDurationMs=100` with header `X-Deadline-Ms: 500`.
-3. **Fail-Fast Case**: `GET /api/demo?mode=secure&workDurationMs=100` with header `X-Deadline-Ms: -10`.
-4. **Abandonment Case**: `GET /api/demo?mode=secure&workDurationMs=200` with header `X-Deadline-Ms: 100`.
+## Quick Start
+1. Build and Test: `mvn clean test`
+2. Run locally: `mvn spring-boot:run`
+3. Verify via Curl:
+    - Success (Within Deadline): `curl -H "X-Deadline-Ms: 1000" "http://localhost:8080/api/demo?duration=100"`
+    - Success (Fail-Fast): `curl -H "X-Deadline-Ms: 50" "http://localhost:8080/api/demo?duration=200"`
 
-## Code Map
-- `DeadlineContext.java`: ThreadLocal storage for the request deadline.
-- `DeadlineInterceptor.java`: Extracts the deadline from the HTTP header.
-- `WebConfig.java`: Registers the interceptor.
-- `DemoService.java`: Implements the fail-fast and abandonment checks.
-- `DemoControllerTest.java`: Verifies the defensive contract outcomes.
+## Acceptance Criteria
+- Processing completion when the deadline budget is sufficient resulting in `controlDecision: allow`.
+- Immediate rejection or mid-process abandonment when the deadline expires resulting in `controlDecision: block`.
+- Response payloads include standard metadata (`riskScore`, `controlFamily`, `concept`).

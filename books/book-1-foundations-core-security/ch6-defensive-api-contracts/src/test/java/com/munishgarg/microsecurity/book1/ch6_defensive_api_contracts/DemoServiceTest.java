@@ -3,7 +3,6 @@ package com.munishgarg.microsecurity.book1.ch6_defensive_api_contracts;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.time.Instant;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -18,29 +17,29 @@ class DemoServiceTest {
     }
 
     @Test
-    void shouldReturnSuccessWhenBudgetIsSufficient() {
-        DeadlineContext.set(Instant.now().plusSeconds(5));
-        Map<String, Object> result = service.processSecure(10);
+    void shouldAllowWhenDeadlineIsSufficient() {
+        DeadlineContext.set(1000); // 1 second deadline
+        Map<String, Object> result = service.demo(100);
 
         assertNotNull(result);
         assertEquals("allow", result.get("controlDecision"));
+        assertEquals(15, result.get("riskScore"));
     }
 
     @Test
-    void shouldReturnBlockWhenDeadlineIsExceeded() {
-        DeadlineContext.set(Instant.now().minusSeconds(5));
-        Map<String, Object> result = service.processSecure(0);
+    void shouldFailFastWhenDeadlineAlreadyPassed() {
+        DeadlineContext.set(-1); 
+        Map<String, Object> result = service.demo(100);
 
+        assertNotNull(result);
         assertEquals("block", result.get("controlDecision"));
         assertEquals(10, result.get("riskScore"));
     }
 
     @Test
-    void shouldInsecureModeSucceedEvenWhenDeadlineIsExceeded() {
-        DeadlineContext.set(Instant.now().minusSeconds(5));
-        Map<String, Object> result = service.processInsecure(0);
-
-        assertEquals("allow", result.get("controlDecision"));
-        assertEquals(85, result.get("riskScore"));
+    void shouldIncludeStandardsMetadata() {
+        Map<String, Object> result = service.demo(0);
+        assertEquals("ch6-defensive-api-contracts", result.get("project"));
+        assertEquals("RESILIENCE", result.get("controlFamily"));
     }
 }

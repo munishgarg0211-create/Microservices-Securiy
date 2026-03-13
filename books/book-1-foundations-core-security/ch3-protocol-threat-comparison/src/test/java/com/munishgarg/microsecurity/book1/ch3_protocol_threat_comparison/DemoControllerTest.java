@@ -18,21 +18,29 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldApproveSecuregRPC() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("protocol", "gRPC + TLS"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch3-protocol-threat-comparison"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("approved-transport"))
+                .andExpect(jsonPath("$.riskScore").value(12));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldRejectPlainHttp() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("protocol", "Plain HTTP"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("rejected-transport"))
+                .andExpect(jsonPath("$.riskScore").value(95));
+    }
+
+    @Test
+    void shouldReturnStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch3-protocol-threat-comparison"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.concept").value("Protocol Security Comparison"))
+                .andExpect(jsonPath("$.controlFamily").value("THREAT"));
     }
 }

@@ -18,31 +18,30 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldSucceedWhenDownstreamIsHealthy() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldReturnSuccessWhenDownstreamIsHealthy() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("shouldFail", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.controlDecision").value("allow"))
-                .andExpect(jsonPath("$.data").value("Success from Downstream"));
+                .andExpect(jsonPath("$.riskScore").value(15));
     }
 
     @Test
-    void shouldInsecureModeFailWhenDownstreamFails() throws Exception {
+    void shouldTriggerFallbackWhenDownstreamFails() throws Exception {
         mockMvc.perform(get("/api/demo")
-                .param("mode", "insecure")
-                .param("shouldFail", "true"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.controlDecision").value("error"))
-                .andExpect(jsonPath("$.riskScore").value(95));
-    }
-
-    @Test
-    void shouldSecureModeTriggerFallbackWhenDownstreamFails() throws Exception {
-        mockMvc.perform(get("/api/demo")
-                .param("mode", "secure")
                 .param("shouldFail", "true"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.controlDecision").value("fallback"))
                 .andExpect(jsonPath("$.data").value("Cached/Static Data"))
                 .andExpect(jsonPath("$.riskScore").value(10));
+    }
+
+    @Test
+    void shouldIncludeStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.project").value("ch6-circuit-breaker-security"))
+                .andExpect(jsonPath("$.concept").value("Service Resilience"))
+                .andExpect(jsonPath("$.controlFamily").value("RESILIENCE"));
     }
 }

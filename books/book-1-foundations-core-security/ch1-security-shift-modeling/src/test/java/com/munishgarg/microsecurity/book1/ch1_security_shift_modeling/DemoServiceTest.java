@@ -1,7 +1,6 @@
 package com.munishgarg.microsecurity.book1.ch1_security_shift_modeling;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
@@ -12,23 +11,35 @@ class DemoServiceTest {
     private final DemoService service = new DemoService();
 
     @Test
-    void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
+    void shouldEvaluateModelingAsShielded() {
+        Map<String, Object> result = service.demo(Map.of(
+            "designReview", "true", 
+            "threatModeling", "true", 
+            "earlyMitigationRate", "85"
+        ));
 
         assertNotNull(result);
-        assertEquals("ch1-security-shift-modeling", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
+        assertEquals("shielded", result.get("controlDecision"));
+        assertEquals(12, result.get("riskScore"));
     }
 
     @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
+    void shouldEvaluateModelingAsExposedWhenRateIsLow() {
+        Map<String, Object> result = service.demo(Map.of(
+            "designReview", "true", 
+            "threatModeling", "true", 
+            "earlyMitigationRate", "70"
+        ));
 
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+        assertNotNull(result);
+        assertEquals("exposed", result.get("controlDecision"));
+        assertEquals(88, result.get("riskScore"));
+    }
+
+    @Test
+    void shouldIncludeStandardsMetadata() {
+        Map<String, Object> result = service.demo(Map.of());
+        assertEquals("ch1-security-shift-modeling", result.get("project"));
+        assertEquals("THREAT", result.get("controlFamily"));
     }
 }

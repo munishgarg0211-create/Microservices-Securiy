@@ -4,30 +4,49 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Pure Unit Test for DemoService.
+ * Uses a real DownstreamService instance to avoid Mockito instrumentation issues in Java 21 environments.
+ */
 class DemoServiceTest {
 
-    private final DownstreamService downstreamService = new DownstreamService();
-    private final DemoService service = new DemoService(downstreamService);
+    private DownstreamService downstreamService;
+    private DemoService demoService;
+
+    @BeforeEach
+    void setUp() {
+        downstreamService = new DownstreamService();
+        demoService = new DemoService(downstreamService);
+    }
 
     @Test
-    void shouldReturnSuccessWhenNotFailing() {
-        Map<String, Object> result = service.demoSecure(false, 0);
+    void shouldReturnSuccessResponse() {
+        // We pass false for shouldFail to simulate a healthy downstream
+        Map<String, Object> result = demoService.demo(false, 0);
 
         assertNotNull(result);
-        assertEquals("ch6-circuit-breaker-security", result.get("project"));
-        assertEquals("secure", result.get("mode"));
         assertEquals("allow", result.get("controlDecision"));
         assertEquals("Success from Downstream", result.get("data"));
     }
 
     @Test
-    void shouldReturnInsecureFailureWhenFailing() {
-        Map<String, Object> result = service.demoInsecure(true, 0);
+    void shouldReturnFallbackOnExceptionLogic() {
+        // Directly test the fallback logic
+        Map<String, Object> result = demoService.fallback(true, 0, new RuntimeException("Simulated Failure"));
 
-        assertEquals("insecure", result.get("mode"));
-        assertEquals("error", result.get("decision") != null ? result.get("decision") : result.get("controlDecision"));
-        assertEquals(95, result.get("riskScore"));
+        assertNotNull(result);
+        assertEquals("fallback", result.get("controlDecision"));
+        assertEquals("Cached/Static Data", result.get("data"));
+        assertEquals(10, result.get("riskScore"));
+    }
+
+    @Test
+    void shouldIncludeStandardsMetadata() {
+        Map<String, Object> result = demoService.demo(false, 0);
+        assertEquals("ch6-circuit-breaker-security", result.get("project"));
+        assertEquals("RESILIENCE", result.get("controlFamily"));
     }
 }

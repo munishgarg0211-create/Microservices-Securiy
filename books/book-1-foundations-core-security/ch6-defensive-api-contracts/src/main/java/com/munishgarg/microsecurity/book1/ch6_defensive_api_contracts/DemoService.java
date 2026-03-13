@@ -7,29 +7,27 @@ import org.springframework.stereotype.Service;
 @Service
 public class DemoService {
 
+    private static final String PROJECT = "ch6-defensive-api-contracts";
+    private static final String BOOK = "book-1-foundations-core-security";
+    private static final String OBJECTIVE = "Implement defensive API contracts using deadline propagation to prevent resource exhaustion.";
+    private static final String CONCEPT = "Defensive Programming";
+    private static final String CONTROL_FAMILY = "RESILIENCE";
+
     /**
-     * SECURE MODE: Enforces deadline checks (Fail-Fast).
+     * Executes a secure processing demonstration with deadline enforcement.
      */
-    public Map<String, Object> processSecure(long workDurationMs) {
+    public Map<String, Object> demo(long workDurationMs) {
         if (DeadlineContext.isExpired()) {
-            return buildResponse("secure", "block", "Deadline exceeded! Failing fast to save resources.", null, 10);
+            return buildResponse("block", "Deadline exceeded! Failing fast to save resources before starting work.", null, 10);
         }
 
         simulateWork(workDurationMs);
 
         if (DeadlineContext.isExpired()) {
-             return buildResponse("secure", "block", "Deadline exceeded during processing! Abandoning results.", null, 20);
+             return buildResponse("block", "Deadline exceeded during processing! Abandoning results to prevent further cascading delay.", null, 20);
         }
 
-        return buildResponse("secure", "allow", "Processing completed within deadline budget.", "Success Data", 15);
-    }
-
-    /**
-     * INSECURE MODE: Ignores deadlines.
-     */
-    public Map<String, Object> processInsecure(long workDurationMs) {
-        simulateWork(workDurationMs);
-        return buildResponse("insecure", "allow", "Processing completed ignoring any deadlines.", "Success Data", 85);
+        return buildResponse("allow", "Processing completed successfully within the allocated deadline budget.", "Success Data", 15);
     }
 
     private void simulateWork(long duration) {
@@ -42,10 +40,13 @@ public class DemoService {
         }
     }
 
-    private Map<String, Object> buildResponse(String mode, String decision, String behavior, Object data, int risk) {
+    private Map<String, Object> buildResponse(String decision, String behavior, Object data, int risk) {
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("project", "ch6-defensive-api-contracts");
-        result.put("mode", mode);
+        result.put("project", PROJECT);
+        result.put("book", BOOK);
+        result.put("concept", CONCEPT);
+        result.put("objective", OBJECTIVE);
+        result.put("controlFamily", CONTROL_FAMILY);
         result.put("controlDecision", decision);
         result.put("expectedBehavior", behavior);
         result.put("data", data);

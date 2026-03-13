@@ -18,21 +18,40 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldAllowDeveloperToWriteCode() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("role", "Developer")
+                .param("action", "write-code"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch1-role-based-learning-labs"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("allow"))
+                .andExpect(jsonPath("$.riskScore").value(12));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldDenyDeveloperToDeployService() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("role", "Developer")
+                .param("action", "deploy-service"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("deny"))
+                .andExpect(jsonPath("$.riskScore").value(94));
+    }
+
+    @Test
+    void shouldAllowSecurityToAuditLogs() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("role", "Security")
+                .param("action", "audit-logs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("allow"));
+    }
+
+    @Test
+    void shouldIncludeStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch1-role-based-learning-labs"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.concept").value("Role-Based Security Lab"))
+                .andExpect(jsonPath("$.controlFamily").value("AUTHZ"));
     }
 }

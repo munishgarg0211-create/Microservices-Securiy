@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Demonstrates Defensive API Contracts: Deadline Propagation and Fail-Fast.
+ * Demonstrates defensive API contracts with deadline propagation.
  */
 @RestController
 @RequestMapping("/api/demo")
@@ -19,15 +19,13 @@ public class DemoController {
         this.demoService = demoService;
     }
 
+    /**
+     * Executes the defensive API demo.
+     * The deadline is typically set in the 'X-Deadline-Ms' header by an interceptor.
+     * Use 'duration' param to simulate work time.
+     */
     @GetMapping
-    public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
-            @RequestParam(defaultValue = "100") long workDurationMs) {
-        
-        if ("insecure".equalsIgnoreCase(mode)) {
-            return demoService.processInsecure(workDurationMs);
-        }
-        
-        return demoService.processSecure(workDurationMs);
+    public Map<String, Object> getDemo(@RequestParam(defaultValue = "100") long duration) {
+        return demoService.demo(duration);
     }
 }

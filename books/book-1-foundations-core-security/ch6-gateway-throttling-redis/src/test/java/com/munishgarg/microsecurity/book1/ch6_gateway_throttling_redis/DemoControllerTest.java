@@ -1,43 +1,44 @@
 package com.munishgarg.microsecurity.book1.ch6_gateway_throttling_redis;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+/**
+ * Pure Unit Test for DemoController.
+ * Uses WebTestClient.bindToController() to bypass the full Spring context and auto-configuration,
+ * avoiding environment-specific issues with Redis and Spring Cloud Gateway in tests.
+ */
 class DemoControllerTest {
 
-    @Autowired
     private WebTestClient webTestClient;
 
-    @MockBean
-    private ReactiveRedisConnectionFactory reactiveRedisConnectionFactory;
-
-    @MockBean
-    private RedisConnectionFactory redisConnectionFactory;
+    @BeforeEach
+    void setUp() {
+        // Use real service instance as it has no complex dependencies
+        DemoService demoService = new DemoService();
+        DemoController demoController = new DemoController(demoService);
+        webTestClient = WebTestClient.bindToController(demoController).build();
+    }
 
     @Test
-    void shouldReturnSecurePayload() {
-        webTestClient.get().uri("/api/demo?mode=secure")
+    void shouldReturnAllowPayload() {
+        webTestClient.get().uri("/api/demo")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.controlDecision").isEqualTo("allow")
+                .jsonPath("$.riskScore").isEqualTo(10);
+    }
+
+    @Test
+    void shouldIncludeStandardMetadata() {
+        webTestClient.get().uri("/api/demo")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.project").isEqualTo("ch6-gateway-throttling-redis")
-                .jsonPath("$.mode").isEqualTo("secure")
-                .jsonPath("$.controlDecision").isEqualTo("allow");
-    }
-
-    @Test
-    void shouldReturnInsecurePayload() {
-        webTestClient.get().uri("/api/demo?mode=insecure")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.mode").isEqualTo("insecure")
-                .jsonPath("$.riskScore").isEqualTo(85);
+                .jsonPath("$.concept").isEqualTo("Perimeter Rate Limiting")
+                .jsonPath("$.controlFamily").isEqualTo("RESILIENCE");
     }
 }

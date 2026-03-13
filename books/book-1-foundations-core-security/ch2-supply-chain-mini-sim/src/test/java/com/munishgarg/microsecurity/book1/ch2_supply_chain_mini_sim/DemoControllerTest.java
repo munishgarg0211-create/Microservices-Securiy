@@ -18,21 +18,40 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldAllowSignedWithSbom() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("imageSigned", "true")
+                .param("hasSbom", "true"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch2-supply-chain-mini-sim"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("allow"))
+                .andExpect(jsonPath("$.riskScore").value(18));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldDenyUnsignedImage() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("imageSigned", "false")
+                .param("hasSbom", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("deny"))
+                .andExpect(jsonPath("$.riskScore").value(94));
+    }
+
+    @Test
+    void shouldDenyMissingSbom() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("imageSigned", "true")
+                .param("hasSbom", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("deny"));
+    }
+
+    @Test
+    void shouldReturnStandardMetadata() throws Exception {
+        mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch2-supply-chain-mini-sim"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.concept").value("Supply Chain Security"))
+                .andExpect(jsonPath("$.controlFamily").value("POLICY"));
     }
 }

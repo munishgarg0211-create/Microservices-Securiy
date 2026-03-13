@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Demonstrates Rate Limiting Algorithms: Token Bucket vs Leaky Bucket.
+ * Demonstrates and simulates rate limiting algorithms.
  */
 @RestController
 @RequestMapping("/api/demo")
@@ -19,15 +19,12 @@ public class DemoController {
         this.demoService = demoService;
     }
 
+    /**
+     * Executes the rate algorithm simulator demo.
+     * @param algorithm Choice of 'token' or 'leaky'.
+     */
     @GetMapping
-    public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
-            @RequestParam(defaultValue = "token") String algo) {
-        
-        if ("insecure".equalsIgnoreCase(mode)) {
-            return demoService.demoInsecure();
-        }
-        
-        return demoService.demoSecure(algo);
+    public Map<String, Object> getDemo(@RequestParam(defaultValue = "token") String algorithm) {
+        return demoService.demo(algorithm);
     }
 }

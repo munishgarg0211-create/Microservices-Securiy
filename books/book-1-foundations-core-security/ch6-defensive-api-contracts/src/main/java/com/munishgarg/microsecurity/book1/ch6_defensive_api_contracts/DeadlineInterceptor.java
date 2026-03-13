@@ -15,7 +15,7 @@ public class DeadlineInterceptor implements HandlerInterceptor {
         if (deadlineHeader != null) {
             try {
                 long millisFromNow = Long.parseLong(deadlineHeader);
-                DeadlineContext.set(Instant.now().plusMillis(millisFromNow));
+                DeadlineContext.set(millisFromNow);
             } catch (NumberFormatException e) {
                 // Ignore invalid header
             }
