@@ -18,21 +18,35 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldAllowWhenAllPoliciesPass() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("imageSigned", "true")
+                .param("hasSbom", "true")
+                .param("criticalVulns", "0"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch6-dynamic-policy-engine"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("allow"))
+                .andExpect(jsonPath("$.riskScore").value(0));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldBlockWhenPoliciesFail() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("imageSigned", "false")
+                .param("hasSbom", "true")
+                .param("criticalVulns", "0"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch6-dynamic-policy-engine"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("block"))
+                .andExpect(jsonPath("$.riskScore").value(50))
+                .andExpect(jsonPath("$.violations[0]").value("require-signed-image"));
+    }
+
+    @Test
+    void shouldInsecureModeIgnorePolicyViolations() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("mode", "insecure")
+                .param("imageSigned", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("allow"))
+                .andExpect(jsonPath("$.riskScore").value(95));
     }
 }

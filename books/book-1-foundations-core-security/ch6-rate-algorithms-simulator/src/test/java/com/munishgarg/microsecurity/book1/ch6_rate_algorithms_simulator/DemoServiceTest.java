@@ -1,8 +1,8 @@
 package com.munishgarg.microsecurity.book1.ch6_rate_algorithms_simulator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -12,23 +12,23 @@ class DemoServiceTest {
     private final DemoService service = new DemoService();
 
     @Test
-    void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
-
-        assertNotNull(result);
-        assertEquals("ch6-rate-algorithms-simulator", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
+    void tokenBucketShouldAllowBurst() {
+        for (int i = 0; i < 10; i++) {
+            Map<String, Object> result = service.demoSecure("token");
+            assertEquals("allow", result.get("controlDecision"));
+        }
     }
 
     @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
+    void leakyBucketShouldAllowInitialRequests() {
+        Map<String, Object> result = service.demoSecure("leaky");
+        assertEquals("allow", result.get("controlDecision"));
+    }
 
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+    @Test
+    void insecureModeShouldAlwaysAllow() {
+        Map<String, Object> result = service.demoInsecure();
+        assertEquals("allow", result.get("controlDecision"));
+        assertEquals(95, result.get("riskScore"));
     }
 }

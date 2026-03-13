@@ -18,21 +18,31 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
+    void shouldSucceedWhenDownstreamIsHealthy() throws Exception {
         mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch6-circuit-breaker-security"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("allow"))
+                .andExpect(jsonPath("$.data").value("Success from Downstream"));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldInsecureModeFailWhenDownstreamFails() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("mode", "insecure")
+                .param("shouldFail", "true"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch6-circuit-breaker-security"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("error"))
+                .andExpect(jsonPath("$.riskScore").value(95));
+    }
+
+    @Test
+    void shouldSecureModeTriggerFallbackWhenDownstreamFails() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .param("mode", "secure")
+                .param("shouldFail", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("fallback"))
+                .andExpect(jsonPath("$.data").value("Cached/Static Data"))
+                .andExpect(jsonPath("$.riskScore").value(10));
     }
 }

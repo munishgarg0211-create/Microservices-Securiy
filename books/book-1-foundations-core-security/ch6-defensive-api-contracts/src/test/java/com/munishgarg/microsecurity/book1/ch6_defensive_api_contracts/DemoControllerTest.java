@@ -18,21 +18,42 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldSucceedWithinDeadline() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .header("X-Deadline-Ms", "500")
+                .param("workDurationMs", "100"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch6-defensive-api-contracts"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("allow"))
+                .andExpect(jsonPath("$.data").value("Success Data"));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
+    void shouldFailFastWhenDeadlineAlreadyExceeded() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .header("X-Deadline-Ms", "-10") // Already expired
+                .param("workDurationMs", "100"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch6-defensive-api-contracts"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("block"))
+                .andExpect(jsonPath("$.expectedBehavior").value(org.hamcrest.Matchers.containsString("Failing fast")));
+    }
+
+    @Test
+    void shouldAbandonWhenDeadlineExpiresDuringWork() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .header("X-Deadline-Ms", "50")
+                .param("workDurationMs", "150"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("block"))
+                .andExpect(jsonPath("$.expectedBehavior").value(org.hamcrest.Matchers.containsString("Abandoning results")));
+    }
+
+    @Test
+    void shouldInsecureModeIgnoreDeadline() throws Exception {
+        mockMvc.perform(get("/api/demo")
+                .header("X-Deadline-Ms", "-10")
+                .param("mode", "insecure")
+                .param("workDurationMs", "50"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("allow"));
     }
 }

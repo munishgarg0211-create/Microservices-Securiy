@@ -1,34 +1,45 @@
 package com.munishgarg.microsecurity.book1.ch6_gateway_throttling_redis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import reactor.test.StepVerifier;
 
+@SpringBootTest
 class DemoServiceTest {
 
-    private final DemoService service = new DemoService();
+    @Autowired
+    private DemoService service;
+
+    @MockBean
+    private ReactiveRedisConnectionFactory reactiveRedisConnectionFactory;
+
+    @MockBean
+    private RedisConnectionFactory redisConnectionFactory;
 
     @Test
-    void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
-
-        assertNotNull(result);
-        assertEquals("ch6-gateway-throttling-redis", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
+    void shouldReturnSecureResponse() {
+        StepVerifier.create(service.demoSecure())
+                .assertNext(result -> {
+                    assertEquals("secure", result.get("mode"));
+                    assertEquals("allow", result.get("controlDecision"));
+                })
+                .verifyComplete();
     }
 
     @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
-
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+    void shouldReturnInsecureResponse() {
+        StepVerifier.create(service.demoInsecure())
+                .assertNext(result -> {
+                    assertEquals("insecure", result.get("mode"));
+                    assertEquals(85, result.get("riskScore"));
+                })
+                .verifyComplete();
     }
 }

@@ -1,34 +1,43 @@
 package com.munishgarg.microsecurity.book1.ch6_dynamic_policy_engine;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
+@SpringBootTest
 class DemoServiceTest {
 
-    private final DemoService service = new DemoService();
+    @Autowired
+    private DemoService service;
 
     @Test
-    void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
+    void shouldPassWhenRulesAreMet() {
+        Map<String, String> params = Map.of(
+            "imageSigned", "true",
+            "hasSbom", "true",
+            "criticalVulns", "0"
+        );
+        Map<String, Object> result = service.demoSecure(params);
 
         assertNotNull(result);
-        assertEquals("ch6-dynamic-policy-engine", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
+        assertEquals("allow", result.get("controlDecision"));
     }
 
     @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
+    void shouldReportViolationsWhenRulesFail() {
+        Map<String, String> params = Map.of(
+            "imageSigned", "false",
+            "hasSbom", "false"
+        );
+        Map<String, Object> result = service.demoSecure(params);
 
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+        assertEquals("block", result.get("controlDecision"));
+        assertTrue(result.get("riskScore") instanceof Integer);
+        assertTrue((Integer) result.get("riskScore") > 0);
     }
 }

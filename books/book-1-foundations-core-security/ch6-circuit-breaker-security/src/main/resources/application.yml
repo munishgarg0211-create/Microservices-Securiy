@@ -3,3 +3,20 @@ spring:
     name: ch6-circuit-breaker-security
 server:
   port: 8080
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      downstreamService:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  bulkhead:
+    instances:
+      downstreamService:
+        maxConcurrentCalls: 5
+        maxWaitDuration: 0

@@ -1,38 +1,43 @@
 package com.munishgarg.microsecurity.book1.ch6_gateway_throttling_redis;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class DemoControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
+
+    @MockBean
+    private ReactiveRedisConnectionFactory reactiveRedisConnectionFactory;
+
+    @MockBean
+    private RedisConnectionFactory redisConnectionFactory;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch6-gateway-throttling-redis"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+    void shouldReturnSecurePayload() {
+        webTestClient.get().uri("/api/demo?mode=secure")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.project").isEqualTo("ch6-gateway-throttling-redis")
+                .jsonPath("$.mode").isEqualTo("secure")
+                .jsonPath("$.controlDecision").isEqualTo("allow");
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch6-gateway-throttling-redis"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+    void shouldReturnInsecurePayload() {
+        webTestClient.get().uri("/api/demo?mode=insecure")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.mode").isEqualTo("insecure")
+                .jsonPath("$.riskScore").isEqualTo(85);
     }
 }

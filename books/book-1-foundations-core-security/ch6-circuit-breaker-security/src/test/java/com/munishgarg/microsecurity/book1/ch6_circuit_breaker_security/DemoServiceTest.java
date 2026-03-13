@@ -1,7 +1,6 @@
 package com.munishgarg.microsecurity.book1.ch6_circuit_breaker_security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.Map;
@@ -9,26 +8,26 @@ import org.junit.jupiter.api.Test;
 
 class DemoServiceTest {
 
-    private final DemoService service = new DemoService();
+    private final DownstreamService downstreamService = new DownstreamService();
+    private final DemoService service = new DemoService(downstreamService);
 
     @Test
-    void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
+    void shouldReturnSuccessWhenNotFailing() {
+        Map<String, Object> result = service.demoSecure(false, 0);
 
         assertNotNull(result);
         assertEquals("ch6-circuit-breaker-security", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
         assertEquals("secure", result.get("mode"));
+        assertEquals("allow", result.get("controlDecision"));
+        assertEquals("Success from Downstream", result.get("data"));
     }
 
     @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
+    void shouldReturnInsecureFailureWhenFailing() {
+        Map<String, Object> result = service.demoInsecure(true, 0);
 
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+        assertEquals("insecure", result.get("mode"));
+        assertEquals("error", result.get("decision") != null ? result.get("decision") : result.get("controlDecision"));
+        assertEquals(95, result.get("riskScore"));
     }
 }

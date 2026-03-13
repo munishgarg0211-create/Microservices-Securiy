@@ -25,7 +25,12 @@ public class DemoController {
     @GetMapping
     public Map<String, Object> getDemo(
             @RequestParam(defaultValue = "secure") String mode,
-            @RequestParam Map<String, String> params) {
-        return demoService.demo(mode, params);
+            @RequestParam(defaultValue = "false") boolean shouldFail,
+            @RequestParam(defaultValue = "0") long delayMs) {
+        
+        if ("insecure".equalsIgnoreCase(mode)) {
+            return demoService.demoInsecure(shouldFail, delayMs);
+        }
+        return demoService.demoSecure(shouldFail, delayMs);
     }
 }

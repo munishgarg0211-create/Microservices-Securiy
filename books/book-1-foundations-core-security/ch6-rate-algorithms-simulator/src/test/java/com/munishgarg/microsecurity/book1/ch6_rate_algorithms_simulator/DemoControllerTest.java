@@ -18,21 +18,35 @@ class DemoControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void shouldServeSecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo"))
+    void shouldAllowTokenBucketInitially() throws Exception {
+        mockMvc.perform(get("/api/demo").param("algo", "token"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch6-rate-algorithms-simulator"))
-                .andExpect(jsonPath("$.mode").value("secure"))
-                .andExpect(jsonPath("$.controlFamily").isNotEmpty())
-                .andExpect(jsonPath("$.controlDecision").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("allow"));
     }
 
     @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
+    void shouldAllowLeakyBucketInitially() throws Exception {
+        mockMvc.perform(get("/api/demo").param("algo", "leaky"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("allow"));
+    }
+
+    @Test
+    void shouldThrottleWhenBurstExceededInTokenBucket() throws Exception {
+        // Capacity is 10. Requesting 11 times.
+        for (int i = 0; i < 10; i++) {
+            mockMvc.perform(get("/api/demo").param("algo", "token")).andExpect(status().isOk());
+        }
+        mockMvc.perform(get("/api/demo").param("algo", "token"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.controlDecision").value("throttle"));
+    }
+
+    @Test
+    void shouldInsecureModeBypassThrottling() throws Exception {
         mockMvc.perform(get("/api/demo").param("mode", "insecure"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch6-rate-algorithms-simulator"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
+                .andExpect(jsonPath("$.controlDecision").value("allow"))
+                .andExpect(jsonPath("$.riskScore").value(95));
     }
 }
