@@ -1,0 +1,41 @@
+# Secure Deployment with Restricted Pod Security Standard
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secure-app
+  namespace: secure-ns
+  labels:
+    app: secure-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: secure-app
+  template:
+    metadata:
+      labels:
+        app: secure-app
+    spec:
+      # Pod-level security context - Enforcing Restricted PSS
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: secure-app
+        image: ghcr.io/my-org/secure-app:latest
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"] # Drop all Linux capabilities
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+        # BETTER: Use volume mounts for secrets, never environment variables
+        volumeMounts:
+        - name: db-secret-vol
+          mountPath: "/etc/secrets"
+          readOnly: true
+      volumes:
+      - name: db-secret-vol
+        secret:
+          secretName: db-creds # Created via External Secrets Operator syncing from Vault

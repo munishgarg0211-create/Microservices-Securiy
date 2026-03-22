@@ -1,0 +1,18 @@
+# Falco Rules for Microservice Runtime Protection
+- rule: Shell Spawned in Container
+  desc: Detects a shell being spawned in a production container, often a sign of RCE.
+  condition: container and proc.name in (shell_procs) and not user_known_shell_activities
+  output: "Suspicious shell spawned (user=%user.name container=%container.id shell=%proc.name cmdline=%proc.cmdline)"
+  priority: WARNING
+
+- rule: Sensitive File Accessed
+  desc: Detects read/write attempts to sensitive system files.
+  condition: fd.name startswith /etc/shadow or fd.name startswith /var/run/secrets/kubernetes.io/serviceaccount/token
+  output: "Sensitive file access (user=%user.name file=%fd.name command=%proc.cmdline)"
+  priority: CRITICAL
+
+- rule: Write to Non-Writable Directory
+  desc: Detects write attempts to directories that should be read-only at runtime.
+  condition: (evt.type=open or evt.type=openat) and evt.arg.flags contains O_WRONLY and fd.name startswith /usr/bin
+  output: "Unauthorized write attempt (user=%user.name file=%fd.name)"
+  priority: ERROR

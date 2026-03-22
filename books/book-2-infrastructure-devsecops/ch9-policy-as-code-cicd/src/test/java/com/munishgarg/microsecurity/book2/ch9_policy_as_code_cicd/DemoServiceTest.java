@@ -13,22 +13,11 @@ class DemoServiceTest {
 
     @Test
     void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
+        Map<String, Object> result = service.demo(Map.of());
 
         assertNotNull(result);
         assertEquals("ch9-policy-as-code-cicd", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
-    }
-
-    @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
-
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+        assertEquals("unified-secure-baseline", result.get("securityModel"));
+        assertEquals("production-ready", result.get("status"));
     }
 }

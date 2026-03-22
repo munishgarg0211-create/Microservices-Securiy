@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/demo")
+// COPY-PASTE READY: Fully unified and secured API endpoint controller.
 public class DemoController {
 
     private final DemoService demoService;
@@ -15,7 +16,7 @@ public class DemoController {
     public DemoController(DemoService demoService) {
         this.demoService = demoService;
     }
-    // mode selects good practice (secure) vs intentionally bad practice (insecure).
+    // Unified security endpoint: implements best-practice policy gating by default.
     // params carries chapter-specific inputs so one endpoint can demo different controls.
     // Production copy/paste checklist:
     // 1) Treat request params as untrusted input and validate strictly.
@@ -24,8 +25,7 @@ public class DemoController {
 
     @GetMapping
     public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
             @RequestParam Map<String, String> params) {
-        return demoService.demo(mode, params);
+        return demoService.demo(params);
     }
 }

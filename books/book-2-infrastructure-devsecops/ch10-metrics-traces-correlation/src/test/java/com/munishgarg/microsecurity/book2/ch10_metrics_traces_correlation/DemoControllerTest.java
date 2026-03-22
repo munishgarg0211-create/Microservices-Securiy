@@ -22,17 +22,9 @@ class DemoControllerTest {
         mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch10-metrics-traces-correlation"))
-                .andExpect(jsonPath("$.mode").value("secure"))
+                .andExpect(jsonPath("$.securityModel").value("unified-secure-baseline"))
                 .andExpect(jsonPath("$.controlFamily").isNotEmpty())
                 .andExpect(jsonPath("$.controlDecision").isNotEmpty());
     }
 
-    @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch10-metrics-traces-correlation"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
-    }
 }

@@ -8,35 +8,36 @@
 ## Objective
 Structured logs with user/trace enrichment.
 
-## Mitigation Logic
+## Security Context
+
+### The Problem
+Decentralized, fragmented application logs make it nearly impossible to trace the origin or full lateral impact of a sophisticated, multi-service intrusion event.
+
+### The Resolution
+Centralizing all security logs and enriching them with unified metadata (like trace IDs, identities, and cluster geography) provides deterministic, instantaneous hunting visibility across the entire microservice fabric.
+
+### Code Implementation
+The logic enforcing this resolution is clearly marked in the code map below with `// COPY-PASTE READY:` annotations. This demonstrates exactly where the production-grade secure baseline naturally mitigates the vulnerability.\n\n## Mitigation Logic
 - Control family: `OBSERVABILITY` (security signal enrichment and triage coverage).
-- Core secure/insecure decision model in code:
-  - Secure mode (`mode=secure`) enriches and triages suspicious events comprehensively.
-  - Insecure mode (`mode=insecure`) leaves sparse telemetry and blind spots.
-- Good practice (`mode=secure`):
+- Enforced security baseline:
   - Improves detection quality and response readiness.
   - Lowers operational risk through better visibility.
-- Bad practice (`mode=insecure`):
   - Under-instrumented telemetry weakens threat detection.
   - Raises risk due to reduced signal fidelity and triage coverage.
 - Example:
-  - `GET /api/demo?mode=secure&events=50&suspicious=7` -> high enrichment/triage.
-  - `GET /api/demo?mode=insecure&events=50&suspicious=7` -> blind spots + higher risk.
+  - `GET /api/demo?events=50&suspicious=7` -> high enrichment/triage.
 
 
 ## Demo Scope
-- Execute secure and insecure observability outcomes via `GET /api/demo?mode=secure|insecure`.
 - Use telemetry parameters like `events` and `suspicious`.
 - Compare `enrichedEvents`, `triagedEvents`, and `riskScore` to show impact.
 
 ## Run Plan
 1. Start service: `mvn spring-boot:run`.
-2. Run secure path: `GET /api/demo?mode=secure&events=50&suspicious=7`.
-3. Run insecure path with same inputs and compare telemetry enrichment/triage.
+2. Run API endpoint: `GET /api/demo?events=50&suspicious=7`.
 
 ## Acceptance Criteria
-- Secure mode returns a deterministic, control-enforced decision for the chapter scenario.
-- Insecure mode produces a contrasting outcome that demonstrates impact/risk tradeoff.
+- The endpoint returns a deterministic, control-enforced decision for the chapter scenario.
 - API response includes measurable fields (`controlDecision`, `expectedBehavior`, `riskScore`) and tests validate them.
 
 ## Generated Demo Sample
@@ -48,16 +49,14 @@ Structured logs with user/trace enrichment.
 ## Code Demonstration Map
 
 <!-- CODE_MAP_START -->
-- `src/main/java/com/munishgarg/microsecurity/book2/ch10_centralized_enriched_logs/DemoApplication.java`: Spring Boot entrypoint that starts this chapter demo.
-- `src/main/java/com/munishgarg/microsecurity/book2/ch10_centralized_enriched_logs/DemoController.java`: API layer where request validation/authorization behavior is demonstrated.
-- `src/main/java/com/munishgarg/microsecurity/book2/ch10_centralized_enriched_logs/DemoService.java`: Service logic that implements the chapter's security control.
-- `src/main/resources/application.yml`: Runtime security/config properties for this chapter.
-- `infra/`: Reserved for deployment/policy manifests (currently scaffold placeholder).
-- `pom.xml`: Build dependencies and plugins used to run and test this demo.
-- `src/test/java/com/munishgarg/microsecurity/book2/ch10_centralized_enriched_logs/DemoControllerTest.java`: Automated check that validates expected secure behavior and impact.
-- `src/test/java/com/munishgarg/microsecurity/book2/ch10_centralized_enriched_logs/DemoServiceTest.java`: Automated check that validates expected secure behavior and impact.
-
-- **Highlight:** Core concept and impact tests below are pulled from the chapter implementation.
+- `src/main/java/com/munishgarg/microsecurity/book2/ch10_centralized_enriched_logs/DemoApplication.java`: Spring Boot entrypoint.
+- `src/main/java/com/munishgarg/microsecurity/book2/ch10_centralized_enriched_logs/DemoController.java`: Unified security endpoint.
+- `src/main/java/com/munishgarg/microsecurity/book2/ch10_centralized_enriched_logs/DemoService.java`: Secure-by-default logic.
+- `src/main/resources/application.yml`: Runtime configuration.
+- `infra/Dockerfile`: Hardened, multi-stage build.
+- `pom.xml`: Build dependencies.
+- `src/test/java/com/munishgarg/microsecurity/book2/ch10_centralized_enriched_logs/DemoControllerTest.java`: Automated validation of the security endpoint.
+- `src/test/java/com/munishgarg/microsecurity/book2/ch10_centralized_enriched_logs/DemoServiceTest.java`: Logic validation for deterministic outcomes.
 
 ### Core Concept Code
 
@@ -81,7 +80,7 @@ public class DemoController {
     public DemoController(DemoService demoService) {
         this.demoService = demoService;
     }
-    // mode selects good practice (secure) vs intentionally bad practice (insecure).
+    // Unified security endpoint: implements best-practice policy gating by default.
     // params carries chapter-specific inputs so one endpoint can demo different controls.
     // Production copy/paste checklist:
     // 1) Treat request params as untrusted input and validate strictly.
@@ -90,11 +89,11 @@ public class DemoController {
 
     @GetMapping
     public Map<String, Object> getDemo(
-            @RequestParam(defaultValue = "secure") String mode,
             @RequestParam Map<String, String> params) {
-        return demoService.demo(mode, params);
+        return demoService.demo(params);
     }
 }
+
 ```
 
 - Source: `src/main/java/com/munishgarg/microsecurity/book2/ch10_centralized_enriched_logs/DemoService.java`
@@ -122,92 +121,79 @@ public class DemoService {
 
 
     public Map<String, Object> demo() {
-        return demo("secure", Map.of());
+        return demo(Map.of());
     }
 
-    public Map<String, Object> demo(String mode) {
-        return demo(mode, Map.of());
-    }
-
-    public Map<String, Object> demo(String mode, Map<String, String> params) {
-        // Secure mode = good practice: enforce controls.
-        // Insecure mode = intentionally bad practice: show what breaks when controls are bypassed.
-        String normalizedMode = "insecure".equalsIgnoreCase(mode) ? "insecure" : "secure";
-        boolean secureMode = "secure".equals(normalizedMode);
-
+    public Map<String, Object> demo(Map<String, String> params) {
+        // Unified secure implementation: always enforce controls.
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("project", PROJECT);
         result.put("book", BOOK);
-        result.put("status", "sample-ready");
-        result.put("secureControl", "enabled");
-        result.put("mode", normalizedMode);
+        result.put("status", "production-ready");
+        result.put("securityModel", "unified-secure-baseline");
         result.put("concept", CONCEPT);
         result.put("objective", OBJECTIVE);
         result.put("controlFamily", CONTROL_FAMILY);
 
-        applyFamilyLogic(result, params, secureMode);
+        applyFamilyLogic(result, params);
         return result;
     }
 
-    private void applyFamilyLogic(Map<String, Object> result, Map<String, String> params, boolean secureMode) {
+    private void applyFamilyLogic(Map<String, Object> result, Map<String, String> params) {
         switch (CONTROL_FAMILY) {
-            case "AUTHZ" -> applyAuthzScenario(result, params, secureMode);
-            case "TRANSPORT" -> applyTransportScenario(result, params, secureMode);
-            case "RATE_LIMIT" -> applyRateLimitScenario(result, params, secureMode);
-            case "MESSAGING" -> applyMessagingScenario(result, params, secureMode);
-            case "POLICY" -> applyPolicyScenario(result, params, secureMode);
-            case "OBSERVABILITY" -> applyObservabilityScenario(result, params, secureMode);
-            case "INCIDENT" -> applyIncidentScenario(result, params, secureMode);
-            case "COMPLIANCE" -> applyComplianceScenario(result, params, secureMode);
-            case "THREAT" -> applyThreatScenario(result, params, secureMode);
-            default -> applyDefaultScenario(result, secureMode);
+            case "AUTHZ" -> applyAuthzScenario(result, params);
+            case "TRANSPORT" -> applyTransportScenario(result, params);
+            case "RATE_LIMIT" -> applyRateLimitScenario(result, params);
+            case "MESSAGING" -> applyMessagingScenario(result, params);
+            case "POLICY" -> applyPolicyScenario(result, params);
+            case "OBSERVABILITY" -> applyObservabilityScenario(result, params);
+            case "INCIDENT" -> applyIncidentScenario(result, params);
+            case "COMPLIANCE" -> applyComplianceScenario(result, params);
+            case "THREAT" -> applyThreatScenario(result, params);
+            default -> applyDefaultScenario(result);
         }
     }
 
-    private void applyAuthzScenario(Map<String, Object> result, Map<String, String> params, boolean secureMode) {
+    private void applyAuthzScenario(Map<String, Object> result, Map<String, String> params) {
         String actor = params.getOrDefault("actor", "alice");
         String owner = params.getOrDefault("owner", "bob");
         boolean authorizedByOwnership = actor.equals(owner) || "admin".equalsIgnoreCase(actor);
 
         // Good practice: enforce object ownership/role checks.
         // Bad practice: allow access regardless of ownership (BOLA-style flaw).
-        boolean allowed = secureMode ? authorizedByOwnership : true;
+        boolean allowed = authorizedByOwnership ;
         result.put("scenario", "object-level-authorization");
         result.put("actor", actor);
         result.put("resourceOwner", owner);
         result.put("controlDecision", allowed ? "allow" : "deny");
-        result.put("expectedBehavior", secureMode
-                ? "owner or admin only access is enforced"
-                : "authorization bypass demonstrates potential OWASP BOLA impact");
+        result.put("expectedBehavior", "owner or admin only access is enforced");
         result.put("riskScore", allowed && !authorizedByOwnership ? 95 : 25);
     }
 
-    private void applyTransportScenario(Map<String, Object> result, Map<String, String> params, boolean secureMode) {
+    private void applyTransportScenario(Map<String, Object> result, Map<String, String> params) {
         String tlsVersion = params.getOrDefault("tlsVersion", "1.0");
         boolean trustedClient = Boolean.parseBoolean(params.getOrDefault("trustedClient", "false"));
 
         boolean strongTls = compareTls(tlsVersion, "1.2") >= 0;
         // Good practice: require modern TLS + trusted identity.
         // Bad practice: accept weak or untrusted transport.
-        boolean accepted = secureMode ? (strongTls && trustedClient) : true;
+        boolean accepted = (strongTls && trustedClient) ;
 
         result.put("scenario", "transport-hardening");
         result.put("tlsVersion", tlsVersion);
         result.put("trustedClient", trustedClient);
         result.put("controlDecision", accepted ? "allow" : "deny");
-        result.put("expectedBehavior", secureMode
-                ? "only trusted clients over TLS 1.2+ are accepted"
-                : "weak transport accepted to demonstrate insecure baseline");
+        result.put("expectedBehavior", "only trusted clients over TLS 1.2+ are accepted");
         result.put("riskScore", accepted && (!strongTls || !trustedClient) ? 90 : 20);
     }
 
-    private void applyRateLimitScenario(Map<String, Object> result, Map<String, String> params, boolean secureMode) {
+    private void applyRateLimitScenario(Map<String, Object> result, Map<String, String> params) {
         int requests = parseInt(params.getOrDefault("requests", "120"), 120);
         int limit = parseInt(params.getOrDefault("limit", "100"), 100);
 
         // Good practice: enforce limits and block overflow.
         // Bad practice: process all traffic and allow abuse.
-        int blocked = secureMode ? Math.max(0, requests - limit) : 0;
+        int blocked = Math.max(0, requests - limit) ;
         int allowed = requests - blocked;
 
         result.put("scenario", "abuse-throttling");
@@ -216,60 +202,54 @@ public class DemoService {
         result.put("allowedRequests", allowed);
         result.put("blockedRequests", blocked);
         result.put("controlDecision", blocked > 0 ? "throttle" : "allow");
-        result.put("expectedBehavior", secureMode
-                ? "excess traffic is throttled at the edge"
-                : "all traffic passes and abuse window remains open");
+        result.put("expectedBehavior", "excess traffic is throttled at the edge");
         result.put("riskScore", blocked == 0 && requests > limit ? 88 : 30);
     }
 
-    private void applyMessagingScenario(Map<String, Object> result, Map<String, String> params, boolean secureMode) {
+    private void applyMessagingScenario(Map<String, Object> result, Map<String, String> params) {
         boolean producerAuth = Boolean.parseBoolean(params.getOrDefault("producerAuth", "false"));
         boolean schemaValid = Boolean.parseBoolean(params.getOrDefault("schemaValid", "false"));
         boolean encryptedChannel = Boolean.parseBoolean(params.getOrDefault("encryptedChannel", "false"));
 
         // Good practice: accept only authenticated, valid, encrypted messages.
         // Bad practice: trust any payload reaching the bus.
-        boolean accepted = secureMode ? (producerAuth && schemaValid && encryptedChannel) : true;
+        boolean accepted = (producerAuth && schemaValid && encryptedChannel) ;
 
         result.put("scenario", "message-channel-security");
         result.put("producerAuth", producerAuth);
         result.put("schemaValid", schemaValid);
         result.put("encryptedChannel", encryptedChannel);
         result.put("controlDecision", accepted ? "accept" : "reject");
-        result.put("expectedBehavior", secureMode
-                ? "message accepted only when auth, schema and channel controls pass"
-                : "unchecked message acceptance demonstrates event-bus risk");
+        result.put("expectedBehavior", "message accepted only when auth, schema and channel controls pass");
         result.put("riskScore", accepted && !(producerAuth && schemaValid && encryptedChannel) ? 92 : 22);
     }
 
-    private void applyPolicyScenario(Map<String, Object> result, Map<String, String> params, boolean secureMode) {
+    private void applyPolicyScenario(Map<String, Object> result, Map<String, String> params) {
         boolean imageSigned = Boolean.parseBoolean(params.getOrDefault("imageSigned", "false"));
         boolean hasSbom = Boolean.parseBoolean(params.getOrDefault("hasSbom", "false"));
         int criticalVulns = parseInt(params.getOrDefault("criticalVulns", "2"), 2);
 
         // Good practice: enforce policy gates before deploy.
         // Bad practice: bypass gates even when artifacts fail checks.
-        boolean pass = secureMode ? (imageSigned && hasSbom && criticalVulns == 0) : true;
+        boolean pass = (imageSigned && hasSbom && criticalVulns == 0) ;
 
         result.put("scenario", "policy-gate");
         result.put("imageSigned", imageSigned);
         result.put("hasSbom", hasSbom);
         result.put("criticalVulns", criticalVulns);
         result.put("controlDecision", pass ? "pass" : "block");
-        result.put("expectedBehavior", secureMode
-                ? "deployment is blocked until signing, SBOM and vuln gates pass"
-                : "policy checks bypassed to show supply chain exposure");
+        result.put("expectedBehavior", "deployment is blocked until signing, SBOM and vuln gates pass");
         result.put("riskScore", pass && (!imageSigned || !hasSbom || criticalVulns > 0) ? 93 : 24);
     }
 
-    private void applyObservabilityScenario(Map<String, Object> result, Map<String, String> params, boolean secureMode) {
+    private void applyObservabilityScenario(Map<String, Object> result, Map<String, String> params) {
         int events = parseInt(params.getOrDefault("events", "50"), 50);
         int suspicious = parseInt(params.getOrDefault("suspicious", "7"), 7);
 
         // Good practice: enrich and triage all suspicious events.
         // Bad practice: weak telemetry creates blind spots.
-        int enriched = secureMode ? events : Math.max(0, events / 5);
-        int triaged = secureMode ? suspicious : Math.max(0, suspicious / 3);
+        int enriched = events ;
+        int triaged = suspicious ;
 
         result.put("scenario", "security-observability");
         result.put("events", events);
@@ -277,54 +257,48 @@ public class DemoService {
         result.put("enrichedEvents", enriched);
         result.put("triagedEvents", triaged);
         result.put("controlDecision", triaged >= suspicious ? "visible" : "blind-spots");
-        result.put("expectedBehavior", secureMode
-                ? "security events are correlated for reliable detection"
-                : "limited telemetry demonstrates alerting blind spots");
+        result.put("expectedBehavior", "security events are correlated for reliable detection");
         result.put("riskScore", triaged < suspicious ? 84 : 28);
     }
 
-    private void applyIncidentScenario(Map<String, Object> result, Map<String, String> params, boolean secureMode) {
+    private void applyIncidentScenario(Map<String, Object> result, Map<String, String> params) {
         int incidents = parseInt(params.getOrDefault("incidents", "3"), 3);
         // Good practice: runbook-driven response lowers MTTR.
         // Bad practice: ad-hoc response increases impact window.
-        int mttrMinutes = secureMode ? 25 : 120;
-        boolean runbookUsed = secureMode;
+        int mttrMinutes = 25 ;
+        boolean runbookUsed = true;
 
         result.put("scenario", "incident-response");
         result.put("incidents", incidents);
         result.put("mttrMinutes", mttrMinutes);
         result.put("runbookUsed", runbookUsed);
         result.put("controlDecision", runbookUsed ? "contained" : "uncoordinated");
-        result.put("expectedBehavior", secureMode
-                ? "runbook-driven containment reduces response time"
-                : "absence of runbook increases incident impact duration");
+        result.put("expectedBehavior", "runbook-driven containment reduces response time");
         result.put("riskScore", runbookUsed ? 32 : 87);
     }
 
-    private void applyComplianceScenario(Map<String, Object> result, Map<String, String> params, boolean secureMode) {
+    private void applyComplianceScenario(Map<String, Object> result, Map<String, String> params) {
         String dataRegion = params.getOrDefault("dataRegion", "eu-west-1");
         String requestRegion = params.getOrDefault("requestRegion", "us-east-1");
         boolean evidenceAttached = Boolean.parseBoolean(params.getOrDefault("evidenceAttached", "false"));
 
         // Good practice: enforce region + evidence constraints.
         // Bad practice: ignore compliance controls and continue.
-        boolean compliant = secureMode ? (dataRegion.equals(requestRegion) && evidenceAttached) : true;
+        boolean compliant = (dataRegion.equals(requestRegion) && evidenceAttached) ;
 
         result.put("scenario", "compliance-control");
         result.put("dataRegion", dataRegion);
         result.put("requestRegion", requestRegion);
         result.put("evidenceAttached", evidenceAttached);
         result.put("controlDecision", compliant ? "compliant" : "violation");
-        result.put("expectedBehavior", secureMode
-                ? "region and evidence checks enforce auditable compliance"
-                : "policy bypass simulates non-compliant data handling");
+        result.put("expectedBehavior", "region and evidence checks enforce auditable compliance");
         result.put("riskScore", compliant ? 27 : 86);
     }
 
-    private void applyThreatScenario(Map<String, Object> result, Map<String, String> params, boolean secureMode) {
+    private void applyThreatScenario(Map<String, Object> result, Map<String, String> params) {
         int exploitability = parseInt(params.getOrDefault("exploitability", "80"), 80);
-        int controlCoverage = secureMode ? parseInt(params.getOrDefault("controlCoverage", "85"), 85)
-                : parseInt(params.getOrDefault("controlCoverage", "30"), 30);
+        int controlCoverage = parseInt(params.getOrDefault("controlCoverage", "85"), 85)
+                ;
 
         // Good practice: improve control coverage to reduce residual risk.
         // Bad practice: low coverage leaves known attack paths exposed.
@@ -335,19 +309,15 @@ public class DemoService {
         result.put("controlCoverage", controlCoverage);
         result.put("residualRisk", residualRisk);
         result.put("controlDecision", residualRisk <= 20 ? "mitigated" : "exposed");
-        result.put("expectedBehavior", secureMode
-                ? "controls reduce exploitability to an acceptable residual risk"
-                : "weak controls leave known threat path exposed");
+        result.put("expectedBehavior", "controls reduce exploitability to an acceptable residual risk");
         result.put("riskScore", residualRisk <= 20 ? 29 : 89);
     }
 
-    private void applyDefaultScenario(Map<String, Object> result, boolean secureMode) {
+    private void applyDefaultScenario(Map<String, Object> result) {
         result.put("scenario", "secure-by-default");
-        result.put("controlDecision", secureMode ? "enforced" : "bypassed");
-        result.put("expectedBehavior", secureMode
-                ? "security checks are applied before business processing"
-                : "security checks are skipped to illustrate failure mode");
-        result.put("riskScore", secureMode ? 35 : 82);
+        result.put("controlDecision", "enforced");
+        result.put("expectedBehavior", "security checks are applied before business processing");
+        result.put("riskScore", 35);
     }
 
     private int parseInt(String value, int fallback) {
@@ -367,6 +337,7 @@ public class DemoService {
         return parseInt(digits, 0);
     }
 }
+
 ```
 
 ### Impact Demonstration Tests
@@ -398,20 +369,13 @@ class DemoControllerTest {
         mockMvc.perform(get("/api/demo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.project").value("ch10-centralized-enriched-logs"))
-                .andExpect(jsonPath("$.mode").value("secure"))
+                .andExpect(jsonPath("$.securityModel").value("unified-secure-baseline"))
                 .andExpect(jsonPath("$.controlFamily").isNotEmpty())
                 .andExpect(jsonPath("$.controlDecision").isNotEmpty());
     }
 
-    @Test
-    void shouldServeInsecureDemoPayload() throws Exception {
-        mockMvc.perform(get("/api/demo").param("mode", "insecure"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.project").value("ch10-centralized-enriched-logs"))
-                .andExpect(jsonPath("$.mode").value("insecure"))
-                .andExpect(jsonPath("$.expectedBehavior").isNotEmpty());
-    }
 }
+
 ```
 
 - Source: `src/test/java/com/munishgarg/microsecurity/book2/ch10_centralized_enriched_logs/DemoServiceTest.java`
@@ -432,26 +396,17 @@ class DemoServiceTest {
 
     @Test
     void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
+        Map<String, Object> result = service.demo(Map.of());
 
         assertNotNull(result);
         assertEquals("ch10-centralized-enriched-logs", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
-    }
-
-    @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
-
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+        assertEquals("unified-secure-baseline", result.get("securityModel"));
+        assertEquals("production-ready", result.get("status"));
     }
 }
+
 ```
+
 <!-- CODE_MAP_END -->
 
 
