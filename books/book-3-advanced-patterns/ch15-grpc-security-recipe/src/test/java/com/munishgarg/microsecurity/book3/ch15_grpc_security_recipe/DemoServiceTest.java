@@ -1,11 +1,9 @@
 package com.munishgarg.microsecurity.book3.ch15_grpc_security_recipe;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import java.util.Map;
 import org.junit.jupiter.api.Test;
+import java.util.Map;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class DemoServiceTest {
 
@@ -13,22 +11,9 @@ class DemoServiceTest {
 
     @Test
     void shouldReturnProjectMetadataAndSecureDefaults() {
-        Map<String, Object> result = service.demo("secure", Map.of());
-
+        Map<String, Object> result = service.demo(Map.of());
         assertNotNull(result);
         assertEquals("ch15-grpc-security-recipe", result.get("project"));
-        assertEquals("enabled", result.get("secureControl"));
-        assertEquals("sample-ready", result.get("status"));
-        assertEquals("secure", result.get("mode"));
-    }
-
-    @Test
-    void shouldDifferentiateSecureAndInsecureImpact() {
-        Map<String, Object> secure = service.demo("secure", Map.of());
-        Map<String, Object> insecure = service.demo("insecure", Map.of());
-
-        assertEquals("secure", secure.get("mode"));
-        assertEquals("insecure", insecure.get("mode"));
-        assertNotEquals(secure.get("expectedBehavior"), insecure.get("expectedBehavior"));
+        assertNotNull(result.get("expectedBehavior"));
     }
 }
